@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Contexto Acadêmico
 
-Este projeto é o MVP da disciplina de Engenharia de Software da UPF (2025/2).
-O time é composto por Felipe, Jean, Lucas e Manuela.
+Este projeto é o MVP da disciplina de Engenharia de Software.
+O time é composto por Felipe e Jean.
 
 ## Comandos
 
@@ -63,6 +63,17 @@ O `lib/supabase/server.ts` usa `@supabase/ssr` com cookies do Next.js — é asy
 - Arquivo sempre começa com `'use server'`
 - Validar inputs antes de qualquer operação no banco
 - Retornar `{ error: string }` em caso de falha, nunca lançar exceção sem tratar
+
+## Skills Disponíveis
+
+As skills abaixo estão em `.claude/skills/` e podem ser acionadas quando o contexto da tarefa corresponder:
+
+- **agent-development** — criação e estruturação de subagents para Claude Code (frontmatter, system prompt, ferramentas, cores, exemplos)
+- **skill-development** — criação de novas skills (estrutura, progressive disclosure, boas práticas de descrição)
+- **plugin-structure** — scaffold e organização de plugins do Claude Code (`plugin.json`, `${CLAUDE_PLUGIN_ROOT}`, auto-discovery)
+- **plugin-settings** — configuração persistente de plugin via `.claude/plugin-name.local.md` (frontmatter YAML + markdown)
+- **frontend-design** — construção de componentes/páginas frontend com acabamento visual diferenciado, evitando estética genérica de IA
+- **claude-opus-4-5-migration** — migração de prompts e código de Sonnet 4.0/4.5 ou Opus 4.1 para Opus 4.5
 
 ## O Que NÃO Fazer
 

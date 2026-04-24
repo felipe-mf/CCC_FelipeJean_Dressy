@@ -1,0 +1,1 @@
+- [Dressy project context](project_dressy_context.md) — Stack, convenções e regras de arquitetura do MVP (Next.js 16 + Supabase + shadcn/ui)
