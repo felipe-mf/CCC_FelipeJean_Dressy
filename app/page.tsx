@@ -21,8 +21,8 @@ const chapters = [
   },
   {
     n: "02",
-    title: "Curadoria por Claude",
-    body: "A Anthropic API lê o retrato e cruza com o acervo das lojas parceiras. Nada de vitrine aleatória — cada sugestão tem motivo.",
+    title: "Curadoria por IA",
+    body: "A inteligência artificial lê o retrato e cruza com o acervo das lojas parceiras. Nada de vitrine aleatória — cada sugestão tem motivo.",
     tag: "Inteligência",
   },
   {
@@ -173,8 +173,8 @@ export default function LandingPage() {
             </div>
             <p className="md:max-w-sm text-muted-foreground leading-relaxed">
               Cada passo nasce de uma conversa entre você, sua história de
-              roupas e a Claude — uma inteligência treinada para ler estilo, não
-              só tendência.
+              roupas e a inteligência artificial — uma inteligência treinada
+              para ler estilo, não só tendência.
             </p>
           </div>
 
@@ -354,8 +354,10 @@ export default function LandingPage() {
               <span className="text-[11px] uppercase tracking-[0.28em] text-primary mb-2">
                 Contato
               </span>
-              <span className="text-muted-foreground">ola@dressy.com.br</span>
-              <span className="text-muted-foreground">São Paulo, BR</span>
+              <span className="text-muted-foreground">
+                contato@dressy.com.br
+              </span>
+              <span className="text-muted-foreground">Passo Fundo, BR</span>
             </div>
           </div>
 
