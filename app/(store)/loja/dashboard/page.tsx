@@ -6,16 +6,7 @@ import { MetricCard } from "@/components/shared/metric-card";
 import { StoreHeader } from "@/components/shared/store-header";
 import { ProductsTable } from "@/components/shared/products-table";
 import { OrdersList } from "@/components/shared/orders-list";
-import type { Store, Product, StoreMetrics, OrderStatus, PaymentMethod, OrderItem } from "@/types";
-
-interface OrderRow {
-  id: string;
-  status: OrderStatus;
-  total: number;
-  payment_method: PaymentMethod | null;
-  created_at: string;
-  customer_name: string | null;
-}
+import type { Store, Product, StoreMetrics, OrderStatus, PaymentMethod, OrderRow } from "@/types";
 
 interface OrderItemRow {
   order_id: string;
@@ -32,6 +23,8 @@ interface OrderItemRow {
     profiles: { full_name: string | null }[] | null;
   } | null;
 }
+
+const PAID_STATUSES: OrderStatus[] = ["paid", "shipped", "delivered"];
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -51,27 +44,19 @@ export default async function DashboardPage() {
     return <EmptyStoreState />;
   }
 
-  const [productsAllRes, productsRecentRes, productCountRes] =
-    await Promise.all([
-      supabase
-        .from("products")
-        .select("id")
-        .eq("store_id", store.id),
-      supabase
-        .from("products")
-        .select("*")
-        .eq("store_id", store.id)
-        .order("created_at", { ascending: false })
-        .limit(5),
-      supabase
-        .from("products")
-        .select("*", { count: "exact", head: true })
-        .eq("store_id", store.id),
-    ]);
+  const [productsAllRes, productsRecentRes] = await Promise.all([
+    supabase.from("products").select("id").eq("store_id", store.id),
+    supabase
+      .from("products")
+      .select("*")
+      .eq("store_id", store.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ]);
 
   const productIds = (productsAllRes.data ?? []).map((p) => p.id);
   const recentProducts = (productsRecentRes.data ?? []) as Product[];
-  const totalProducts = productCountRes.count ?? 0;
+  const totalProducts = productIds.length;
 
   let orderItems: OrderItemRow[] = [];
   let reviews: { rating: number }[] = [];
@@ -110,22 +95,20 @@ export default async function DashboardPage() {
     reviews = reviewsRes.data ?? [];
   }
 
-  const paidStatuses: OrderStatus[] = ["paid", "shipped", "delivered"];
-
   const totalRevenue = orderItems
-    .filter((oi) => oi.orders && paidStatuses.includes(oi.orders.status))
-    .reduce((sum, oi) => sum + Number(oi.unit_price) * oi.quantity, 0);
+    .filter((item) => item.orders && PAID_STATUSES.includes(item.orders.status))
+    .reduce((sum, item) => sum + Number(item.unit_price) * item.quantity, 0);
 
   const uniqueOrdersMap = new Map<string, OrderRow>();
-  for (const oi of orderItems) {
-    if (oi.orders && !uniqueOrdersMap.has(oi.order_id)) {
-      uniqueOrdersMap.set(oi.order_id, {
-        id: oi.orders.id,
-        status: oi.orders.status,
-        total: Number(oi.orders.total),
-        payment_method: oi.orders.payment_method,
-        created_at: oi.orders.created_at,
-        customer_name: oi.orders.profiles?.[0]?.full_name ?? null,
+  for (const item of orderItems) {
+    if (item.orders && !uniqueOrdersMap.has(item.order_id)) {
+      uniqueOrdersMap.set(item.order_id, {
+        id: item.orders.id,
+        status: item.orders.status,
+        total: Number(item.orders.total),
+        payment_method: item.orders.payment_method,
+        created_at: item.orders.created_at,
+        customer_name: item.orders.profiles?.[0]?.full_name ?? null,
       });
     }
   }

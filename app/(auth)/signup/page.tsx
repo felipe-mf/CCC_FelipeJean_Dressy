@@ -67,10 +67,7 @@ export default function SignUpPage() {
 
         <div className="relative z-10 flex items-center justify-between text-[11px] uppercase tracking-[0.28em] opacity-80 pt-6 border-t border-primary-foreground/20">
           <span>Vol. 01 / Outono ’26</span>
-          <Link
-            href="/"
-            className="hover:opacity-100 transition-opacity"
-          >
+          <Link href="/" className="hover:opacity-100 transition-opacity">
             ← Voltar à capa
           </Link>
         </div>
@@ -138,7 +135,7 @@ export default function SignUpPage() {
                 <RoleTile
                   value="customer"
                   roman="I."
-                  title="Compradora"
+                  title="Pessoa Física"
                   body="Explorar catálogo, montar closet virtual e receber recomendações."
                   defaultChecked
                 />

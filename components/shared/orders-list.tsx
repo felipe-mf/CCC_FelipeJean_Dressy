@@ -1,13 +1,4 @@
-import type { OrderStatus, PaymentMethod } from "@/types";
-
-interface OrderRow {
-  id: string;
-  status: OrderStatus;
-  total: number;
-  payment_method: PaymentMethod | null;
-  created_at: string;
-  customer_name: string | null;
-}
+import type { OrderRow, OrderStatus } from "@/types";
 
 const STATUS_CONFIG: Record<
   OrderStatus,

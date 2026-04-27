@@ -30,3 +30,12 @@ export interface Order {
 export interface OrderWithCustomer extends Order {
   customer_name: string | null;
 }
+
+export interface OrderRow {
+  id: string;
+  status: OrderStatus;
+  total: number;
+  payment_method: PaymentMethod | null;
+  created_at: string;
+  customer_name: string | null;
+}
