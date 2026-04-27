@@ -6,13 +6,21 @@ import { redirect } from "next/navigation";
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
 
+  const email = formData.get("email");
+  const password = formData.get("password");
+  const name = formData.get("name");
+  const role = formData.get("role");
+
+  if (!email || !password || !name) return { error: "Preencha todos os campos." };
+  if (role !== "customer" && role !== "merchant") return { error: "Perfil inválido." };
+
   const { error } = await supabase.auth.signUp({
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
+    email: email as string,
+    password: password as string,
     options: {
       data: {
-        name: formData.get("name") as string,
-        role: formData.get("role") as string,
+        name: name as string,
+        role,
       },
     },
   });
@@ -25,9 +33,14 @@ export async function signUp(formData: FormData) {
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
 
+  const email = formData.get("email");
+  const password = formData.get("password");
+
+  if (!email || !password) return { error: "Preencha todos os campos." };
+
   const { error } = await supabase.auth.signInWithPassword({
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
+    email: email as string,
+    password: password as string,
   });
 
   if (error) return { error: error.message };
@@ -37,6 +50,7 @@ export async function signIn(formData: FormData) {
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/auth/login");
+  const { error } = await supabase.auth.signOut();
+  if (error) return { error: error.message };
+  redirect("/signin");
 }

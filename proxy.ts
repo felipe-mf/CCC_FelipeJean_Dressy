@@ -33,10 +33,11 @@ export default async function middleware(request: NextRequest) {
   const isProtectedRoute =
     request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/closet") ||
-    request.nextUrl.pathname.startsWith("/pedidos");
+    request.nextUrl.pathname.startsWith("/pedidos") ||
+    request.nextUrl.pathname.startsWith("/loja");
 
   if (!user && isProtectedRoute) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+    return NextResponse.redirect(new URL("/signin", request.url));
   }
 
   if (user && isAuthRoute) {
