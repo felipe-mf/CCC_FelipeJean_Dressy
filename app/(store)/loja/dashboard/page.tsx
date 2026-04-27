@@ -106,7 +106,7 @@ export default async function DashboardPage() {
         .in("product_id", productIds),
     ]);
 
-    orderItems = (orderItemsRes.data ?? []) as OrderItemRow[];
+    orderItems = (orderItemsRes.data ?? []) as unknown as OrderItemRow[];
     reviews = reviewsRes.data ?? [];
   }
 
