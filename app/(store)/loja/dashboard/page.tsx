@@ -6,7 +6,14 @@ import { MetricCard } from "@/components/shared/metric-card";
 import { StoreHeader } from "@/components/shared/store-header";
 import { ProductsTable } from "@/components/shared/products-table";
 import { OrdersList } from "@/components/shared/orders-list";
-import type { Store, Product, StoreMetrics, OrderStatus, PaymentMethod, OrderRow } from "@/types";
+import type {
+  Store,
+  Product,
+  StoreMetrics,
+  OrderStatus,
+  PaymentMethod,
+  OrderRow,
+} from "@/types";
 
 interface OrderItemRow {
   order_id: string;
@@ -82,13 +89,10 @@ export default async function DashboardPage() {
               full_name
             )
           )
-        `
+        `,
         )
         .in("product_id", productIds),
-      supabase
-        .from("reviews")
-        .select("rating")
-        .in("product_id", productIds),
+      supabase.from("reviews").select("rating").in("product_id", productIds),
     ]);
 
     orderItems = (orderItemsRes.data ?? []) as unknown as OrderItemRow[];
@@ -116,7 +120,7 @@ export default async function DashboardPage() {
   const recentOrders = Array.from(uniqueOrdersMap.values())
     .sort(
       (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     )
     .slice(0, 5);
 
@@ -202,7 +206,7 @@ function EmptyStoreState() {
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center">
       <span className="text-[11px] uppercase tracking-[0.32em] text-primary flex items-center gap-2">
         <span>✦</span>
-        Bem-vinda ao painel
+        Bem-vindo ao painel
       </span>
       <h2
         className="font-heading tracking-[-0.03em] text-foreground"

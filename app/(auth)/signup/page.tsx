@@ -2,6 +2,8 @@
 
 import { signUp } from "@/lib/auth/actions";
 import { useState } from "react";
+import { FieldInput } from "@/app/(auth)/_components/field-input";
+import { RoleTile } from "@/app/(auth)/signup/_components/role-tile";
 import Link from "next/link";
 
 const GRAIN_SVG =
@@ -183,83 +185,5 @@ export default function SignUpPage() {
         </footer>
       </section>
     </main>
-  );
-}
-
-function FieldInput({
-  label,
-  name,
-  type,
-  autoComplete,
-  required,
-  index,
-  minLength,
-  hint,
-}: {
-  label: string;
-  name: string;
-  type: string;
-  autoComplete?: string;
-  required?: boolean;
-  index: string;
-  minLength?: number;
-  hint?: string;
-}) {
-  return (
-    <label className="group flex flex-col gap-2">
-      <span className="flex items-center justify-between text-[11px] uppercase tracking-[0.28em] text-secondary-foreground">
-        <span>{label}</span>
-        <span className="text-primary font-heading not-italic">{index}</span>
-      </span>
-      <input
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        required={required}
-        minLength={minLength}
-        className="w-full bg-transparent border-0 border-b border-border py-3 font-heading text-2xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
-      />
-      {hint && (
-        <span className="text-xs text-muted-foreground italic font-heading">
-          {hint}
-        </span>
-      )}
-    </label>
-  );
-}
-
-function RoleTile({
-  value,
-  roman,
-  title,
-  body,
-  defaultChecked,
-}: {
-  value: string;
-  roman: string;
-  title: string;
-  body: string;
-  defaultChecked?: boolean;
-}) {
-  return (
-    <label className="relative cursor-pointer group">
-      <input
-        type="radio"
-        name="role"
-        value={value}
-        defaultChecked={defaultChecked}
-        className="peer sr-only"
-      />
-      <div className="h-full flex flex-col gap-2 border border-border p-5 bg-card transition-all group-has-[:checked]:border-primary group-has-[:checked]:bg-accent/60 peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40">
-        <div className="flex items-center justify-between">
-          <span className="font-heading italic text-primary">{roman}</span>
-          <span className="size-3 rounded-full border border-border group-has-[:checked]:bg-primary group-has-[:checked]:border-primary transition-colors" />
-        </div>
-        <span className="font-heading text-xl text-foreground">{title}</span>
-        <span className="text-xs text-muted-foreground leading-relaxed">
-          {body}
-        </span>
-      </div>
-    </label>
   );
 }

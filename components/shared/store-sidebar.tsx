@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { signOut } from "@/lib/auth/actions";
-import { SidebarNav } from "./sidebar-nav";
+import { SidebarNav } from "@/components/shared/sidebar-nav";
 import type { Store } from "@/types";
 
 const GRAIN =

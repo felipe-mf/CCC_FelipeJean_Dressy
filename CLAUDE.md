@@ -55,8 +55,19 @@ O `lib/supabase/server.ts` usa `@supabase/ssr` com cookies do Next.js — é asy
 ### Ao criar novos componentes
 
 - Verifique se já existe um componente shadcn/ui adequado antes de criar do zero
-- Componentes de UI pura vão em `components/ui/`
-- Componentes com lógica de negócio vão em `components/shared/`
+- Decida o escopo pelo número de consumidores reais (não promova por especulação):
+
+  | Escopo                                              | Pasta                       |
+  | --------------------------------------------------- | --------------------------- |
+  | Usado por **1 rota**                                | `app/<rota>/_components/`   |
+  | Usado por **2+ rotas do mesmo route group**         | `app/<group>/_components/`  |
+  | UI pura usada em **2+ route groups**                | `components/ui/`            |
+  | Com lógica de negócio em **2+ route groups**        | `components/shared/`        |
+
+- Subcomponentes só usados por uma página **não** ficam no fim do mesmo arquivo — extraia para `_components/` da rota desde o início (pasta privada, ignorada pelo router).
+- Promova um nível acima quando aparecer o segundo consumidor — antes disso é abstração prematura.
+- Arquivos em kebab-case, exports nomeados em PascalCase.
+- Imports sempre via alias `@/` — nunca caminhos relativos (`./` ou `../`). Exceção única: barrels (`index.ts`) re-exportando irmãos da própria pasta.
 
 ### Ao criar Server Actions
 

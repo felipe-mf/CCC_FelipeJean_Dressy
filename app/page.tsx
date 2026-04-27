@@ -86,7 +86,7 @@ export default function LandingPage() {
               href="/signup"
               className="text-primary hover:opacity-80 transition-opacity"
             >
-              Criar conta ↗
+              Criar conta
             </Link>
           </span>
         </div>

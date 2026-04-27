@@ -2,6 +2,7 @@
 
 import { signIn } from "@/lib/auth/actions";
 import { useState } from "react";
+import { FieldInput } from "@/app/(auth)/_components/field-input";
 import Link from "next/link";
 
 const GRAIN_SVG =
@@ -81,14 +82,28 @@ export default function LoginPage() {
               Retome seu <em className="italic">estilo</em>.
             </h2>
             <p className="text-muted-foreground leading-relaxed pt-1">
-              Entre com suas credenciais para abrir seu closet virtual,
-              pedidos e recomendações.
+              Entre com suas credenciais para abrir seu closet virtual, pedidos
+              e recomendações.
             </p>
           </header>
 
           <form action={handleSubmit} className="flex flex-col gap-8">
-            <FieldInput label="Email" name="email" type="email" autoComplete="email" required index="01" />
-            <FieldInput label="Senha" name="password" type="password" autoComplete="current-password" required index="02" />
+            <FieldInput
+              label="Email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              index="01"
+            />
+            <FieldInput
+              label="Senha"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              index="02"
+            />
 
             {error && (
               <p className="text-sm text-destructive border-l-2 border-destructive pl-3 font-heading italic">
@@ -133,40 +148,5 @@ export default function LoginPage() {
         </footer>
       </section>
     </main>
-  );
-}
-
-function FieldInput({
-  label,
-  name,
-  type,
-  autoComplete,
-  required,
-  index,
-  minLength,
-}: {
-  label: string;
-  name: string;
-  type: string;
-  autoComplete?: string;
-  required?: boolean;
-  index: string;
-  minLength?: number;
-}) {
-  return (
-    <label className="group flex flex-col gap-2">
-      <span className="flex items-center justify-between text-[11px] uppercase tracking-[0.28em] text-secondary-foreground">
-        <span>{label}</span>
-        <span className="text-primary font-heading not-italic">{index}</span>
-      </span>
-      <input
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        required={required}
-        minLength={minLength}
-        className="w-full bg-transparent border-0 border-b border-border py-3 font-heading text-2xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
-      />
-    </label>
   );
 }
