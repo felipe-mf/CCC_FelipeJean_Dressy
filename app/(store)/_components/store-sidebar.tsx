@@ -1,10 +1,7 @@
-import Link from "next/link";
 import { signOut } from "@/lib/auth/actions";
-import { SidebarNav } from "@/components/shared/sidebar-nav";
+import { SidebarShell } from "@/app/(store)/_components/sidebar-shell";
+import { SidebarNav } from "@/app/(store)/_components/sidebar-nav";
 import type { Store } from "@/types";
-
-const GRAIN =
-  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.85  0 0 0 0 0.65  0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
 interface StoreSidebarProps {
   store: Store | null;
@@ -22,27 +19,7 @@ export function StoreSidebar({ store, merchantName }: StoreSidebarProps) {
     : "D";
 
   return (
-    <aside className="relative w-64 min-h-screen bg-[#2C1A0E] flex flex-col shrink-0 overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{ backgroundImage: GRAIN }}
-      />
-
-      {/* Logo */}
-      <div className="relative z-10 px-5 pt-7 pb-5 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="size-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-            <span className="font-heading text-sm font-bold text-primary-foreground leading-none">
-              D
-            </span>
-          </div>
-          <span className="text-[11px] uppercase tracking-[0.28em] text-[#F5F0E8]/50">
-            Dressy
-          </span>
-        </Link>
-      </div>
-
+    <SidebarShell>
       {/* Store info */}
       <div className="relative z-10 px-5 py-5 border-b border-white/10">
         <span className="text-[10px] uppercase tracking-[0.32em] text-primary flex items-center gap-2 mb-3">
@@ -97,6 +74,6 @@ export function StoreSidebar({ store, merchantName }: StoreSidebarProps) {
           </form>
         </div>
       </div>
-    </aside>
+    </SidebarShell>
   );
 }

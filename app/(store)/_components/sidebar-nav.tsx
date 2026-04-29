@@ -9,6 +9,7 @@ import {
   Star,
   Settings2,
 } from "lucide-react";
+import { useSidebarClose } from "@/app/(store)/_components/sidebar-shell";
 
 const NAV_ITEMS = [
   { label: "Visão Geral", href: "/loja/dashboard", icon: LayoutDashboard },
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const close = useSidebarClose();
 
   return (
     <nav className="flex flex-col gap-0.5">
@@ -29,6 +31,7 @@ export function SidebarNav() {
           <Link
             key={href}
             href={href}
+            onClick={close}
             className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-all duration-150 ${
               isActive
                 ? "border-l-2 border-primary bg-primary/10 text-primary pl-[10px]"

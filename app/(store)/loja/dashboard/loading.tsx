@@ -1,8 +1,8 @@
 export default function DashboardLoading() {
   return (
     <div className="flex flex-col gap-10 animate-pulse">
-      <div className="flex items-start gap-6">
-        <div className="size-20 rounded-2xl bg-muted" />
+      <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+        <div className="size-16 sm:size-20 rounded-2xl bg-muted" />
         <div className="flex flex-col gap-3 pt-2">
           <div className="h-2.5 w-16 rounded bg-muted" />
           <div className="h-8 w-52 rounded bg-muted" />

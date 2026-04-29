@@ -1,4 +1,4 @@
-import { StoreSidebar } from "@/components/shared/store-sidebar";
+import { StoreSidebar } from "@/app/(store)/_components/store-sidebar";
 import { createClient } from "@/lib/supabase/server";
 import type { Store } from "@/types";
 
@@ -29,10 +29,10 @@ export default async function StoreLayout({
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen md:flex bg-background">
       <StoreSidebar store={store} merchantName={merchantName} />
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 p-8 md:p-12">{children}</main>
+        <main className="flex-1 px-4 pt-20 pb-8 md:p-12">{children}</main>
       </div>
     </div>
   );

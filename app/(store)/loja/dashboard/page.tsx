@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import { TrendingUp, ShoppingBag, Package, Star } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { MetricCard } from "@/components/shared/metric-card";
-import { StoreHeader } from "@/components/shared/store-header";
-import { ProductsTable } from "@/components/shared/products-table";
-import { OrdersList } from "@/components/shared/orders-list";
+import { MetricCard } from "@/app/(store)/loja/dashboard/_components/metric-card";
+import { StoreHeader } from "@/app/(store)/loja/dashboard/_components/store-header";
+import { ProductsTable } from "@/app/(store)/loja/dashboard/_components/products-table";
+import { OrdersList } from "@/app/(store)/loja/dashboard/_components/orders-list";
 import type {
   Store,
   Product,

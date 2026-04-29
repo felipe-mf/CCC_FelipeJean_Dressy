@@ -9,8 +9,8 @@ export function StoreHeader({ store }: { store: Store }) {
     .toUpperCase();
 
   return (
-    <div className="flex items-start gap-6">
-      <div className="shrink-0 size-20 rounded-2xl border-2 border-border bg-accent flex items-center justify-center">
+    <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+      <div className="shrink-0 size-16 sm:size-20 rounded-2xl border-2 border-border bg-accent flex items-center justify-center">
         <span className="font-heading text-2xl tracking-[-0.04em] text-secondary-foreground">
           {initials}
         </span>
