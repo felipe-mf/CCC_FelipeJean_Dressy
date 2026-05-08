@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TrendingUp, ShoppingBag, Package, Star } from "lucide-react";
 
@@ -45,7 +46,7 @@ export default async function DashboardPage() {
     .from("stores")
     .select("*")
     .eq("owner_id", user.id)
-    .single<Store>();
+    .maybeSingle<Store>();
 
   if (!store) {
     return <EmptyStoreState />;
@@ -218,10 +219,13 @@ function EmptyStoreState() {
         Crie sua loja para começar a listar produtos e receber pedidos na
         Dressy.
       </p>
-      <button className="inline-flex items-center gap-3 bg-primary text-primary-foreground px-6 py-4 font-heading text-lg hover:bg-[#A84E1F] transition-colors rounded-xl">
+      <Link
+        href="/loja/criar"
+        className="inline-flex items-center gap-3 bg-primary text-primary-foreground px-6 py-4 font-heading text-lg hover:bg-[#A84E1F] transition-colors rounded-xl"
+      >
         <span>Criar minha loja</span>
         <span>→</span>
-      </button>
+      </Link>
     </div>
   );
 }

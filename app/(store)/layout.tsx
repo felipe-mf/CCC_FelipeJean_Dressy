@@ -17,15 +17,15 @@ export default async function StoreLayout({
 
   if (user) {
     const [storeRes, profileRes] = await Promise.all([
-      supabase.from("stores").select("*").eq("owner_id", user.id).single(),
+      supabase.from("stores").select("*").eq("owner_id", user.id).maybeSingle(),
       supabase
         .from("profiles")
-        .select("full_name")
+        .select("name")
         .eq("id", user.id)
-        .single(),
+        .maybeSingle(),
     ]);
     store = storeRes.data;
-    merchantName = profileRes.data?.full_name ?? null;
+    merchantName = profileRes.data?.name ?? null;
   }
 
   return (

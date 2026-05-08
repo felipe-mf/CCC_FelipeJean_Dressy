@@ -2,7 +2,7 @@
 
 import { signUp } from "@/lib/auth/actions";
 import { useState } from "react";
-import { FieldInput } from "@/app/(auth)/_components/field-input";
+import { FieldInput } from "@/components/ui/field-input";
 import { RoleTile } from "@/app/(auth)/signup/_components/role-tile";
 import Link from "next/link";
 
