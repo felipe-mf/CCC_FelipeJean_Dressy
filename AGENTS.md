@@ -12,23 +12,34 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## O que é a Dressy
 
-Marketplace de moda circular que conecta brechós, lojas locais e vendedores
-independentes a consumidores urbanos interessados em consumo consciente e
-descoberta de estilo pessoal. Funciona como um "Enjoei com IA": recomendações
-personalizadas de estilo geradas pela Anthropic API, closet virtual, e suporte
-completo a compra e venda sustentável.
+Marketplace de moda circular em que **apenas lojistas CNPJ (brechós, lojas
+locais e vendedores independentes formalizados) anunciam e vendem peças**.
+Consumidores urbanos interessados em consumo consciente e descoberta de estilo
+pessoal participam exclusivamente como compradores. Funciona como um "Enjoei
+com IA": recomendações personalizadas de estilo geradas pela Anthropic API,
+closet virtual organizacional e jornada de compra sustentável.
 
-O diferencial está na personalização: ao se cadastrar, o usuário responde a um
-questionário de perfil de estilo e pode enviar fotos do guarda-roupa para que a
-plataforma identifique suas preferências e gere recomendações automáticas.
+> **Importante:** não há venda peer-to-peer. Usuários CPF (`customer`) **não
+> publicam produtos** — apenas navegam o marketplace, descobrem peças e
+> compram. Toda venda na plataforma parte de um `merchant` (CNPJ).
+
+O diferencial está na personalização: ao se cadastrar, o customer responde a
+um questionário de perfil de estilo e pode enviar fotos do guarda-roupa para
+que a plataforma identifique suas preferências e gere recomendações
+automáticas de produtos disponíveis no marketplace.
 
 **Público-alvo:** homens e mulheres a partir de 18 anos que enfrentam compras impulsivas,
 guarda-roupas desorganizados e dificuldade em identificar o próprio estilo.
 
 ## Perfis de Usuário
 
-- `customer` — compradora: acessa catálogo, closet virtual, pedidos, recomendações de IA
-- `merchant` — lojista: acessa painel gerencial com gestão de loja, produtos, e estatísticas
+- `customer` (CPF) — **somente consumo**. Navega o catálogo, recebe
+  recomendações de IA, mantém um closet virtual de uso organizacional/de
+  estilo (não é vitrine de venda), realiza pedidos e avalia produtos. **Não
+  publica produtos, não cria lojas, não vende.**
+- `merchant` (CNPJ) — **único papel autorizado a vender**. Gerencia a loja,
+  cadastra produtos e imagens, controla estoque, acompanha pedidos recebidos
+  e estatísticas no painel gerencial.
 
 ---
 
@@ -114,12 +125,27 @@ USER (merchant) ──1 STORE ──< PRODUCT ──< PRODUCT_IMAGE
 PRODUCT >──< CATEGORY (via PRODUCT_CATEGORY)
 ```
 
+**Notas de domínio:**
+
+- `PRODUCT.store_id` é **obrigatório** e sempre aponta para uma `STORE`
+  pertencente a um `merchant`. Não existem produtos sem loja nem produtos
+  pertencentes diretamente a um `customer`.
+- `CLOSET_ITEM` é **organizacional** — representa peças do guarda-roupa
+  pessoal do customer (com `PRODUCT` opcional quando a peça foi comprada na
+  plataforma). Nunca é um anúncio de venda.
+- Apenas o `merchant` dono da `STORE` pode escrever em `PRODUCT`,
+  `PRODUCT_IMAGE` e `STORE`. `customer` tem somente `SELECT` público
+  nessas tabelas.
+
 **Regras de banco:**
 
 - Toda tabela nova deve ter `ENABLE ROW LEVEL SECURITY`
 - Toda tabela nova deve ter policies para SELECT, INSERT, UPDATE e DELETE
 - FKs sempre com `ON DELETE CASCADE` ou `RESTRICT` consciente
 - Índices em colunas usadas em `WHERE` e `JOIN` frequentes
+- Policies de escrita em `PRODUCT`, `PRODUCT_IMAGE` e `STORE` devem validar
+  que `auth.uid()` corresponde a um perfil com `role = 'merchant'` dono da
+  loja referenciada
 
 ---
 

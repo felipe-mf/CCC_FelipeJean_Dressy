@@ -9,6 +9,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Este projeto é o MVP da disciplina de Engenharia de Software.
 O time é composto por Felipe e Jean.
 
+**Escopo atual:** apenas `merchant` (CNPJ) vende; `customer` (CPF) só compra.
+Não há venda peer-to-peer — toda publicação de produto parte de uma loja
+formalizada. Ver `AGENTS.md` para detalhes de perfis e regras de RLS.
+
 ## Comandos
 
 ```bash
