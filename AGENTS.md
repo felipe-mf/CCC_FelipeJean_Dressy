@@ -123,6 +123,95 @@ PRODUCT >──< CATEGORY (via PRODUCT_CATEGORY)
 
 ---
 
+## Schema do Banco — Migrations via Supabase CLI
+
+O schema é versionado em `supabase/migrations/` via Supabase CLI. **Nenhuma alteração
+de schema é feita pelo dashboard remoto** — tudo passa por arquivo `.sql` commitado.
+
+### Fluxo para criar/alterar schema
+
+1. Gera o arquivo de migration:
+   ```bash
+   npx supabase migration new <descricao_em_snake_case>
+   ```
+   Cria `supabase/migrations/<timestamp>_<descricao>.sql`.
+
+2. Escreve o SQL no arquivo gerado seguindo as regras de banco acima.
+
+3. Aplica localmente para validar:
+   ```bash
+   npm run db:reset
+   ```
+   Apaga o banco local e reaplica todas as migrations. Se a migration tiver erro, falha aqui.
+
+4. Regenera os types TypeScript:
+   ```bash
+   npm run db:types
+   ```
+   Atualiza `types/database.ts` a partir do schema local.
+
+5. Commita o `.sql` da migration **junto** com o `types/database.ts` atualizado.
+
+### Scripts npm disponíveis
+
+| Script | O que faz |
+|---|---|
+| `npm run db:start` | Sobe o Supabase local em Docker |
+| `npm run db:stop` | Derruba os containers do Supabase local |
+| `npm run db:reset` | Recria o banco local do zero aplicando todas as migrations |
+| `npm run db:types` | Gera `types/database.ts` a partir do schema local |
+| `npm run db:push` | Aplica migrations pendentes no Supabase remoto |
+| `npm run db:pull` | Puxa schema do remoto para uma migration local (uso raro) |
+
+### Regras inegociáveis
+
+- **Nunca** edite schema pelo dashboard remoto — se acontecer por acidente, rodar `npm run db:pull`
+- **Nunca** edite uma migration já aplicada — crie uma nova com `alter table` corrigindo
+- **Sempre** valide com `npm run db:reset` antes de commitar — confirma que a migration aplica limpa do zero
+- **Sempre** commite `types/database.ts` junto com a migration que mudou o schema
+- **Toda** nova tabela: RLS habilitada + policy separada para SELECT, INSERT, UPDATE e DELETE com nomes descritivos (ex: `stores_select_public_or_owner`, não `stores_policy_1`)
+- **`updated_at`** sempre via trigger usando a função `public.set_updated_at()` (já existe)
+- **Triggers em `auth.users`** não são puxados por `db pull` — se precisar criar, fazer manualmente em migration
+
+### Padrão de migration
+
+```sql
+create table public.exemplo (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references public.profiles(id) on delete cascade,
+  name text not null check (char_length(name) between 2 and 80),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index exemplo_owner_id_idx on public.exemplo(owner_id);
+
+create trigger exemplo_set_updated_at
+before update on public.exemplo
+for each row execute function public.set_updated_at();
+
+alter table public.exemplo enable row level security;
+
+create policy "exemplo_select_own"
+  on public.exemplo for select
+  using (owner_id = auth.uid());
+
+create policy "exemplo_insert_own"
+  on public.exemplo for insert
+  with check (owner_id = auth.uid());
+
+create policy "exemplo_update_own"
+  on public.exemplo for update
+  using (owner_id = auth.uid())
+  with check (owner_id = auth.uid());
+
+create policy "exemplo_delete_own"
+  on public.exemplo for delete
+  using (owner_id = auth.uid());
+```
+
+---
+
 ## Diretrizes de Design
 
 ### Identidade Visual
