@@ -29,22 +29,31 @@ export default async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthRoute =
-    request.nextUrl.pathname.startsWith("/signin") ||
-    request.nextUrl.pathname.startsWith("/signup");
+  const pathname = request.nextUrl.pathname;
+
+  const isPublicEntryRoute =
+    pathname === "/" ||
+    pathname.startsWith("/signin") ||
+    pathname.startsWith("/signup");
 
   const isProtectedRoute =
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/closet") ||
-    request.nextUrl.pathname.startsWith("/pedidos") ||
-    request.nextUrl.pathname.startsWith("/loja");
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/closet") ||
+    pathname.startsWith("/pedidos") ||
+    pathname.startsWith("/loja");
 
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 
-  if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (user && isPublicEntryRoute) {
+    const role = user.user_metadata?.role;
+    if (role === "merchant") {
+      return NextResponse.redirect(new URL("/loja/dashboard", request.url));
+    }
+    if (role === "customer") {
+      return NextResponse.redirect(new URL("/marketplace", request.url));
+    }
   }
 
   return supabaseResponse;
