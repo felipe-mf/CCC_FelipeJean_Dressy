@@ -25,6 +25,7 @@ export function CreateStoreForm() {
         autoComplete="organization"
         required
         minLength={2}
+        maxLength={80}
         index="01"
         hint="É como sua vitrine vai aparecer no catálogo."
       />
@@ -37,6 +38,7 @@ export function CreateStoreForm() {
         <textarea
           name="description"
           rows={4}
+          maxLength={500}
           className="w-full bg-transparent border-0 border-b border-border py-3 font-heading text-xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors resize-none"
           placeholder="Conte em poucas linhas o estilo e a curadoria da sua loja."
         />

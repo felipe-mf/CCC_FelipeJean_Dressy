@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Store } from "@/types";
 
 export function StoreHeader({ store }: { store: Store }) {
@@ -45,9 +46,12 @@ export function StoreHeader({ store }: { store: Store }) {
       </div>
 
       <div className="ml-auto shrink-0 hidden md:block">
-        <button className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground hover:text-primary transition-colors">
+        <Link
+          href="/loja/configuracoes"
+          className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground hover:text-primary transition-colors"
+        >
           Editar loja →
-        </button>
+        </Link>
       </div>
     </div>
   );
