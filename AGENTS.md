@@ -189,6 +189,25 @@ de schema é feita pelo dashboard remoto** — tudo passa por arquivo `.sql` com
 | `npm run db:push` | Aplica migrations pendentes no Supabase remoto |
 | `npm run db:pull` | Puxa schema do remoto para uma migration local (uso raro) |
 
+### Conectando ao Supabase remoto sem IPv6
+
+O host direto `db.<ref>.supabase.co` é **IPv6-only** no free tier. Em redes sem IPv6 (residencial BR é o caso comum), `npm run db:push` falha com `hostname resolving error`. Workaround: usar o **Pooler IPv4** com `--db-url`.
+
+O pooler deste projeto é `aws-1-us-west-2.pooler.supabase.com` (note `aws-1`, não `aws-0` — confirme em **Project Settings → Database → Connection string → Session** se mudar de projeto).
+
+```bash
+npx supabase db push --db-url "postgresql://postgres.<ref>:<SUPABASE_DB_PASSWORD>@aws-1-us-west-2.pooler.supabase.com:5432/postgres"
+```
+
+Se o resolver Go do CLI ainda não enxergar o host (roteador respondendo só AAAA), adicionar entrada IPv4 manual no `/etc/hosts`:
+
+```bash
+echo "<ip> aws-1-us-west-2.pooler.supabase.com" | sudo tee -a /etc/hosts
+# remover depois: sudo sed -i '/aws-1-us-west-2.pooler.supabase.com/d' /etc/hosts
+```
+
+Alternativa de emergência: rodar o SQL da migration direto no **SQL Editor** do Studio remoto e registrar manualmente em `supabase_migrations.schema_migrations` (`version`, `name`, `statements`) para que `db:push` futuros não tentem reaplicá-la.
+
 ### Regras inegociáveis
 
 - **Nunca** edite schema pelo dashboard remoto — se acontecer por acidente, rodar `npm run db:pull`

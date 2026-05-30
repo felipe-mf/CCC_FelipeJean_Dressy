@@ -46,6 +46,12 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 
+  if (user && pathname.startsWith("/loja")) {
+    if (user.user_metadata?.role !== "merchant") {
+      return NextResponse.redirect(new URL("/marketplace", request.url));
+    }
+  }
+
   if (user && isPublicEntryRoute) {
     const role = user.user_metadata?.role;
     if (role === "merchant") {

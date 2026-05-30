@@ -1,8 +1,9 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+
+import { requireMerchant } from "@/lib/auth/require-merchant";
 
 const RESERVED_SLUGS = [
   "admin",
@@ -38,23 +39,6 @@ function fallbackSlug(base: string) {
 function slugFromName(name: string): string | null {
   const base = slugify(name);
   return base && !RESERVED_SLUGS.includes(base) ? base : null;
-}
-
-type MerchantSession = {
-  supabase: Awaited<ReturnType<typeof createClient>>;
-  userId: string;
-};
-
-async function requireMerchant(): Promise<MerchantSession | { error: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Não autenticado." };
-  if (user.user_metadata?.role !== "merchant") {
-    return { error: "Apenas lojistas podem gerenciar a loja." };
-  }
-  return { supabase, userId: user.id };
 }
 
 function validateUrl(

@@ -7,6 +7,9 @@ export function FieldInput({
   index,
   minLength,
   maxLength,
+  min,
+  step,
+  inputMode,
   hint,
   defaultValue,
 }: {
@@ -18,6 +21,9 @@ export function FieldInput({
   index: string;
   minLength?: number;
   maxLength?: number;
+  min?: string | number;
+  step?: string | number;
+  inputMode?: "text" | "numeric" | "decimal";
   hint?: string;
   defaultValue?: string;
 }) {
@@ -34,6 +40,9 @@ export function FieldInput({
         required={required}
         minLength={minLength}
         maxLength={maxLength}
+        min={min}
+        step={step}
+        inputMode={inputMode}
         defaultValue={defaultValue}
         className="w-full bg-transparent border-0 border-b border-border py-3 font-heading text-2xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
       />
