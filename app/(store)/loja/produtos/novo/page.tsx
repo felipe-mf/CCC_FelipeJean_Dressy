@@ -4,7 +4,7 @@ import { requireStorePage } from "@/lib/auth/require-store-page";
 import { ProductForm } from "@/app/(store)/loja/produtos/_components/product-form";
 
 export default async function NewProductPage() {
-  await requireStorePage();
+  const { store } = await requireStorePage();
 
   return (
     <section className="max-w-xl w-full mx-auto flex flex-col gap-10 py-6">
@@ -30,7 +30,7 @@ export default async function NewProductPage() {
         </p>
       </header>
 
-      <ProductForm />
+      <ProductForm storeId={store.id} />
     </section>
   );
 }

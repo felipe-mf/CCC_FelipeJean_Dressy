@@ -10,15 +10,18 @@ import { ImageUploader } from "@/app/(store)/loja/produtos/_components/image-upl
 import type { Product, ProductImage } from "@/types";
 
 export function ProductForm({
+  storeId,
   product,
   images = [],
 }: {
+  storeId: string;
   product?: Product;
   images?: ProductImage[];
 }) {
   const editing = Boolean(product);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
 
   async function handleSubmit(formData: FormData) {
@@ -141,7 +144,11 @@ export function ProductForm({
         />
       </div>
 
-      <ImageUploader existing={images} />
+      <ImageUploader
+        storeId={storeId}
+        existing={images}
+        onUploadingChange={setUploading}
+      />
 
       <label className="group flex items-center justify-between gap-4 border-b border-border py-3 cursor-pointer">
         <span className="flex flex-col gap-1">
@@ -174,17 +181,19 @@ export function ProductForm({
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || uploading}
         className="group inline-flex items-center justify-between bg-primary text-primary-foreground px-6 py-5 font-heading text-xl hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
       >
         <span>
-          {pending
-            ? editing
-              ? "Salvando…"
-              : "Publicando…"
-            : editing
-              ? "Salvar alterações"
-              : "Publicar peça"}
+          {uploading
+            ? "Enviando imagens…"
+            : pending
+              ? editing
+                ? "Salvando…"
+                : "Publicando…"
+              : editing
+                ? "Salvar alterações"
+                : "Publicar peça"}
         </span>
         <span className="transition-transform group-hover:translate-x-2">→</span>
       </button>

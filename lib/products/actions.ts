@@ -5,8 +5,6 @@ import { redirect } from "next/navigation";
 
 import { requireMerchant } from "@/lib/auth/require-merchant";
 import {
-  ALLOWED_IMAGE_TYPES,
-  MAX_IMAGE_BYTES,
   MAX_IMAGES_PER_PRODUCT,
   PRODUCT_CONDITIONS,
 } from "@/lib/products/constants";
@@ -19,7 +17,6 @@ const MAX_NAME = 120;
 const MAX_DESCRIPTION = 2000;
 const MAX_SIZE = 40;
 const MAX_BRAND = 80;
-const ALLOWED_IMAGE_TYPE_SET = new Set<string>(ALLOWED_IMAGE_TYPES);
 const BUCKET = "product-images";
 
 type ProductFields = {
@@ -88,26 +85,24 @@ function parseFields(formData: FormData): ProductFields | { error: string } {
   };
 }
 
-function collectImageFiles(formData: FormData): File[] | { error: string } {
-  const raw = formData.getAll("images");
-  const files = raw.filter(
-    (entry): entry is File => entry instanceof File && entry.size > 0,
-  );
-  for (const file of files) {
-    if (!ALLOWED_IMAGE_TYPE_SET.has(file.type)) {
-      return { error: `Tipo de imagem não suportado: ${file.type || "?"}.` };
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      return { error: "Cada imagem deve ter no máximo 5MB." };
+// As imagens já foram enviadas ao Storage pelo navegador (upload direto, para
+// não trafegar os bytes pela Server Action). Aqui só recebemos os caminhos —
+// validamos que cada um pertence à loja do lojista (prefixo `<store_id>/`),
+// já que a policy de Storage garante o mesmo na escrita do objeto.
+function collectImagePaths(
+  formData: FormData,
+  storeId: string,
+): string[] | { error: string } {
+  const paths = formData
+    .getAll("image_paths")
+    .filter((v): v is string => typeof v === "string" && v.length > 0);
+
+  for (const path of paths) {
+    if (!path.startsWith(`${storeId}/`)) {
+      return { error: "Imagem inválida para esta loja." };
     }
   }
-  return files;
-}
-
-function extFromFile(file: File): string {
-  const fromName = file.name.split(".").pop()?.toLowerCase();
-  if (fromName && fromName.length <= 5) return fromName;
-  return file.type.split("/").pop() ?? "bin";
+  return paths;
 }
 
 export async function createProduct(formData: FormData) {
@@ -118,14 +113,6 @@ export async function createProduct(formData: FormData) {
   const fields = parseFields(formData);
   if ("error" in fields) return fields;
 
-  const newFiles = collectImageFiles(formData);
-  if (!Array.isArray(newFiles)) return newFiles;
-  if (newFiles.length > MAX_IMAGES_PER_PRODUCT) {
-    return {
-      error: `No máximo ${MAX_IMAGES_PER_PRODUCT} imagens por produto.`,
-    };
-  }
-
   const { data: store } = await supabase
     .from("stores")
     .select("id")
@@ -133,19 +120,27 @@ export async function createProduct(formData: FormData) {
     .maybeSingle<{ id: string }>();
   if (!store) return { error: "Crie uma loja antes de cadastrar produtos." };
 
+  const paths = collectImagePaths(formData, store.id);
+  if (!Array.isArray(paths)) return paths;
+  if (paths.length > MAX_IMAGES_PER_PRODUCT) {
+    return { error: `No máximo ${MAX_IMAGES_PER_PRODUCT} imagens por produto.` };
+  }
+
   const { data: product, error: insertError } = await supabase
     .from("products")
     .insert({ ...fields, store_id: store.id })
     .select("id")
     .single<{ id: string }>();
   if (insertError || !product) {
+    await removeStorageObjects(supabase, paths);
     return { error: insertError?.message ?? "Falha ao criar produto." };
   }
 
-  const uploadError = await uploadImages(supabase, store.id, product.id, newFiles, 0);
-  if (uploadError) {
+  const rowError = await insertImageRows(supabase, product.id, paths, 0);
+  if (rowError) {
     await supabase.from("products").delete().eq("id", product.id);
-    return { error: uploadError };
+    await removeStorageObjects(supabase, paths);
+    return { error: rowError };
   }
 
   revalidatePath("/loja/produtos");
@@ -178,8 +173,8 @@ export async function updateProduct(productId: string, formData: FormData) {
     .getAll("remove_images")
     .filter((v): v is string => typeof v === "string" && v.length > 0);
 
-  const newFiles = collectImageFiles(formData);
-  if (!Array.isArray(newFiles)) return newFiles;
+  const newPaths = collectImagePaths(formData, product.store_id);
+  if (!Array.isArray(newPaths)) return newPaths;
 
   const { data: existingImages } = await supabase
     .from("product_images")
@@ -190,10 +185,8 @@ export async function updateProduct(productId: string, formData: FormData) {
   const kept = (existingImages ?? []).filter(
     (img) => !removePaths.includes(img.path),
   );
-  if (kept.length + newFiles.length > MAX_IMAGES_PER_PRODUCT) {
-    return {
-      error: `No máximo ${MAX_IMAGES_PER_PRODUCT} imagens por produto.`,
-    };
+  if (kept.length + newPaths.length > MAX_IMAGES_PER_PRODUCT) {
+    return { error: `No máximo ${MAX_IMAGES_PER_PRODUCT} imagens por produto.` };
   }
 
   const { error: updateError } = await supabase
@@ -213,14 +206,13 @@ export async function updateProduct(productId: string, formData: FormData) {
 
   const nextPosition =
     kept.length > 0 ? Math.max(...kept.map((i) => i.position)) + 1 : 0;
-  const uploadError = await uploadImages(
+  const rowError = await insertImageRows(
     supabase,
-    product.store_id,
     productId,
-    newFiles,
+    newPaths,
     nextPosition,
   );
-  if (uploadError) return { error: uploadError };
+  if (rowError) return { error: rowError };
 
   revalidatePath("/loja/produtos");
   revalidatePath(`/loja/produtos/${productId}`);
@@ -277,39 +269,30 @@ export async function toggleProductActive(
   return { success: true };
 }
 
-async function uploadImages(
+async function insertImageRows(
   supabase: SupabaseServerClient,
-  storeId: string,
   productId: string,
-  files: File[],
+  paths: string[],
   startPosition: number,
 ): Promise<string | null> {
-  if (files.length === 0) return null;
-  const uploadedPaths: string[] = [];
+  if (paths.length === 0) return null;
 
-  for (const [idx, file] of files.entries()) {
-    const path = `${storeId}/${productId}/${crypto.randomUUID()}.${extFromFile(file)}`;
-    const { error: storageError } = await supabase.storage
-      .from(BUCKET)
-      .upload(path, file, { contentType: file.type, upsert: false });
-    if (storageError) {
-      if (uploadedPaths.length > 0) {
-        await supabase.storage.from(BUCKET).remove(uploadedPaths);
-      }
-      return `Falha ao enviar imagem: ${storageError.message}`;
-    }
-    uploadedPaths.push(path);
+  const rows = paths.map((path, idx) => ({
+    product_id: productId,
+    path,
+    position: startPosition + idx,
+  }));
 
-    const { error: rowError } = await supabase.from("product_images").insert({
-      product_id: productId,
-      path,
-      position: startPosition + idx,
-    });
-    if (rowError) {
-      await supabase.storage.from(BUCKET).remove(uploadedPaths);
-      return `Falha ao registrar imagem: ${rowError.message}`;
-    }
-  }
-
+  const { error } = await supabase.from("product_images").insert(rows);
+  if (error) return `Falha ao registrar imagem: ${error.message}`;
   return null;
+}
+
+async function removeStorageObjects(
+  supabase: SupabaseServerClient,
+  paths: string[],
+): Promise<void> {
+  if (paths.length > 0) {
+    await supabase.storage.from(BUCKET).remove(paths);
+  }
 }

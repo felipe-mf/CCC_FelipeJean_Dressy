@@ -47,7 +47,11 @@ export default async function EditProductPage({
         </h2>
       </header>
 
-      <ProductForm product={product} images={(images ?? []) as ProductImage[]} />
+      <ProductForm
+        storeId={store.id}
+        product={product}
+        images={(images ?? []) as ProductImage[]}
+      />
     </section>
   );
 }

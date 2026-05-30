@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, X } from "lucide-react";
 
+import { createClient } from "@/lib/supabase/client";
 import { productImageUrl } from "@/lib/products/image-url";
 import {
   ALLOWED_IMAGE_TYPES,
@@ -12,34 +13,50 @@ import {
 } from "@/lib/products/constants";
 import type { ProductImage } from "@/types";
 
+const BUCKET = "product-images";
 const ALLOWED_TYPE_SET = new Set<string>(ALLOWED_IMAGE_TYPES);
 
-type Preview = { id: string; file: File; url: string };
+type Uploaded = { id: string; path: string; url: string };
+
+function extFor(file: File): string {
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+  if (fromName && fromName.length <= 5) return fromName;
+  return file.type.split("/").pop() ?? "bin";
+}
 
 export function ImageUploader({
+  storeId,
   existing = [],
+  onUploadingChange,
 }: {
+  storeId: string;
   existing?: ProductImage[];
+  onUploadingChange?: (uploading: boolean) => void;
 }) {
+  const supabase = useMemo(() => createClient(), []);
   const inputRef = useRef<HTMLInputElement>(null);
   const [kept, setKept] = useState<ProductImage[]>(existing);
   const [removed, setRemoved] = useState<string[]>([]);
-  const [previews, setPreviews] = useState<Preview[]>([]);
+  const [uploaded, setUploaded] = useState<Uploaded[]>([]);
+  const [uploading, setUploading] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    return () => {
-      previews.forEach((p) => URL.revokeObjectURL(p.url));
-    };
-  }, [previews]);
+    onUploadingChange?.(uploading > 0);
+  }, [uploading, onUploadingChange]);
 
-  const totalCount = kept.length + previews.length;
+  const totalCount = kept.length + uploaded.length;
 
-  function addFiles(files: FileList | null) {
+  async function addFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     setError(null);
-    const next: Preview[] = [];
+
+    let slots = MAX_IMAGES - totalCount;
     for (const file of Array.from(files)) {
+      if (slots <= 0) {
+        setError(`No máximo ${MAX_IMAGES} imagens por produto.`);
+        break;
+      }
       if (!ALLOWED_TYPE_SET.has(file.type)) {
         setError("Formato não suportado. Use JPG, PNG, WEBP ou AVIF.");
         continue;
@@ -48,35 +65,31 @@ export function ImageUploader({
         setError("Cada imagem deve ter no máximo 5MB.");
         continue;
       }
-      if (totalCount + next.length >= MAX_IMAGES) {
-        setError(`No máximo ${MAX_IMAGES} imagens por produto.`);
-        break;
+      slots -= 1;
+
+      const path = `${storeId}/${crypto.randomUUID()}.${extFor(file)}`;
+      setUploading((n) => n + 1);
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, file, { contentType: file.type, upsert: false });
+      setUploading((n) => n - 1);
+
+      if (uploadError) {
+        setError(`Falha ao enviar imagem: ${uploadError.message}`);
+        continue;
       }
-      next.push({
-        id: crypto.randomUUID(),
-        file,
-        url: URL.createObjectURL(file),
-      });
+      setUploaded((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), path, url: productImageUrl(path) },
+      ]);
     }
-    if (next.length > 0) {
-      setPreviews((prev) => [...prev, ...next]);
-      syncInput([...previews, ...next]);
-    }
+
+    if (inputRef.current) inputRef.current.value = "";
   }
 
-  function syncInput(list: Preview[]) {
-    if (!inputRef.current) return;
-    const dt = new DataTransfer();
-    list.forEach((p) => dt.items.add(p.file));
-    inputRef.current.files = dt.files;
-  }
-
-  function removePreview(id: string) {
-    const target = previews.find((p) => p.id === id);
-    if (target) URL.revokeObjectURL(target.url);
-    const next = previews.filter((p) => p.id !== id);
-    setPreviews(next);
-    syncInput(next);
+  async function removeUploaded(item: Uploaded) {
+    setUploaded((prev) => prev.filter((u) => u.id !== item.id));
+    await supabase.storage.from(BUCKET).remove([item.path]);
   }
 
   function removeExisting(path: string) {
@@ -117,16 +130,21 @@ export function ImageUploader({
           </figure>
         ))}
 
-        {previews.map((p) => (
+        {uploaded.map((item) => (
           <figure
-            key={p.id}
+            key={item.id}
             className="relative aspect-[3/4] rounded-xl overflow-hidden border border-primary/30 bg-surface-alt"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.url} alt="" className="absolute inset-0 size-full object-cover" />
+            <Image
+              src={item.url}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 50vw, 200px"
+              className="object-cover"
+            />
             <button
               type="button"
-              onClick={() => removePreview(p.id)}
+              onClick={() => removeUploaded(item)}
               aria-label="Remover imagem"
               className="absolute top-2 right-2 size-7 rounded-full bg-background/90 backdrop-blur flex items-center justify-center text-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors"
             >
@@ -138,18 +156,26 @@ export function ImageUploader({
           </figure>
         ))}
 
+        {uploading > 0 && (
+          <div className="aspect-[3/4] rounded-xl border border-dashed border-primary/40 flex flex-col items-center justify-center gap-2 bg-surface-alt/40">
+            <Loader2 className="size-6 text-primary animate-spin" />
+            <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              Enviando…
+            </span>
+          </div>
+        )}
+
         {totalCount < MAX_IMAGES && (
-          <label
-            className="aspect-[3/4] rounded-xl border border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-surface-alt/40 transition-colors text-center px-4"
-          >
-            <span className="font-heading text-3xl text-muted-foreground/60">+</span>
+          <label className="aspect-[3/4] rounded-xl border border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-surface-alt/40 transition-colors text-center px-4">
+            <span className="font-heading text-3xl text-muted-foreground/60">
+              +
+            </span>
             <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Adicionar
             </span>
             <input
               ref={inputRef}
               type="file"
-              name="images"
               accept={ALLOWED_IMAGE_TYPES.join(",")}
               multiple
               className="sr-only"
@@ -159,6 +185,9 @@ export function ImageUploader({
         )}
       </div>
 
+      {uploaded.map((item) => (
+        <input key={item.id} type="hidden" name="image_paths" value={item.path} />
+      ))}
       {removed.map((path) => (
         <input key={path} type="hidden" name="remove_images" value={path} />
       ))}
