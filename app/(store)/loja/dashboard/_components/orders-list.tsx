@@ -1,30 +1,8 @@
-import type { OrderRow, OrderStatus } from "@/types";
-
-const STATUS_CONFIG: Record<
-  OrderStatus,
-  { label: string; className: string }
-> = {
-  pending: {
-    label: "Aguardando",
-    className: "bg-amber-100 text-amber-800",
-  },
-  paid: {
-    label: "Pago",
-    className: "bg-blue-100 text-blue-800",
-  },
-  shipped: {
-    label: "Enviado",
-    className: "bg-violet-100 text-violet-800",
-  },
-  delivered: {
-    label: "Entregue",
-    className: "bg-emerald-100 text-emerald-800",
-  },
-  cancelled: {
-    label: "Cancelado",
-    className: "bg-red-100 text-red-800",
-  },
-};
+import {
+  OrderStatusBadge,
+  PAYMENT_METHOD_LABEL,
+} from "@/app/(store)/_components/order-status-badge";
+import type { OrderRow } from "@/types";
 
 export function OrdersList({ orders }: { orders: OrderRow[] }) {
   return (
@@ -50,7 +28,6 @@ export function OrdersList({ orders }: { orders: OrderRow[] }) {
       ) : (
         <div className="flex flex-col divide-y divide-border">
           {orders.map((order) => {
-            const status = STATUS_CONFIG[order.status];
             const shortId = order.id.slice(-6).toUpperCase();
             return (
               <div
@@ -70,7 +47,8 @@ export function OrdersList({ orders }: { orders: OrderRow[] }) {
                   </div>
                   <span className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.15em]">
                     {new Date(order.created_at).toLocaleDateString("pt-BR")}
-                    {order.payment_method === "pix" ? " · PIX" : " · Cartão"}
+                    {" · "}
+                    {PAYMENT_METHOD_LABEL[order.payment_method]}
                   </span>
                 </div>
 
@@ -81,11 +59,7 @@ export function OrdersList({ orders }: { orders: OrderRow[] }) {
                       currency: "BRL",
                     })}
                   </span>
-                  <span
-                    className={`text-[10px] uppercase tracking-[0.15em] px-2 py-0.5 rounded-full ${status.className}`}
-                  >
-                    {status.label}
-                  </span>
+                  <OrderStatusBadge status={order.status} />
                 </div>
               </div>
             );

@@ -16,23 +16,14 @@ import type {
   OrderRow,
 } from "@/types";
 
-interface OrderItemRow {
-  order_id: string;
-  unit_price: number;
-  quantity: number;
-  product_id: string;
-  orders: {
-    id: string;
-    status: OrderStatus;
-    total: number;
-    payment_method: PaymentMethod | null;
-    created_at: string;
-    user_id: string;
-    profiles: { full_name: string | null }[] | null;
-  } | null;
+interface OrderQueryRow {
+  id: string;
+  status: OrderStatus;
+  total: number;
+  payment_method: PaymentMethod;
+  created_at: string;
+  profiles: { name: string | null } | null;
 }
-
-const PAID_STATUSES: OrderStatus[] = ["paid", "shipped", "delivered"];
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -52,7 +43,7 @@ export default async function DashboardPage() {
     return <EmptyStoreState />;
   }
 
-  const [productsAllRes, productsRecentRes] = await Promise.all([
+  const [productsAllRes, productsRecentRes, ordersRes] = await Promise.all([
     supabase.from("products").select("id").eq("store_id", store.id),
     supabase
       .from("products")
@@ -60,70 +51,49 @@ export default async function DashboardPage() {
       .eq("store_id", store.id)
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("orders")
+      .select(
+        `
+        id,
+        status,
+        total,
+        payment_method,
+        created_at,
+        profiles!orders_customer_id_fkey ( name )
+      `,
+      )
+      .eq("store_id", store.id)
+      .order("created_at", { ascending: false }),
   ]);
 
   const productIds = (productsAllRes.data ?? []).map((p) => p.id);
   const recentProducts = (productsRecentRes.data ?? []) as Product[];
   const totalProducts = productIds.length;
 
-  let orderItems: OrderItemRow[] = [];
+  const orders = (ordersRes.data ?? []) as unknown as OrderQueryRow[];
+
   let reviews: { rating: number }[] = [];
-
   if (productIds.length > 0) {
-    const [orderItemsRes, reviewsRes] = await Promise.all([
-      supabase
-        .from("order_items")
-        .select(
-          `
-          order_id,
-          unit_price,
-          quantity,
-          product_id,
-          orders (
-            id,
-            status,
-            total,
-            payment_method,
-            created_at,
-            user_id,
-            profiles (
-              full_name
-            )
-          )
-        `,
-        )
-        .in("product_id", productIds),
-      supabase.from("reviews").select("rating").in("product_id", productIds),
-    ]);
-
-    orderItems = (orderItemsRes.data ?? []) as unknown as OrderItemRow[];
-    reviews = reviewsRes.data ?? [];
+    const { data } = await supabase
+      .from("reviews")
+      .select("rating")
+      .in("product_id", productIds);
+    reviews = data ?? [];
   }
 
-  const totalRevenue = orderItems
-    .filter((item) => item.orders && PAID_STATUSES.includes(item.orders.status))
-    .reduce((sum, item) => sum + Number(item.unit_price) * item.quantity, 0);
+  const totalRevenue = orders
+    .filter((order) => order.status === "completed")
+    .reduce((sum, order) => sum + Number(order.total), 0);
 
-  const uniqueOrdersMap = new Map<string, OrderRow>();
-  for (const item of orderItems) {
-    if (item.orders && !uniqueOrdersMap.has(item.order_id)) {
-      uniqueOrdersMap.set(item.order_id, {
-        id: item.orders.id,
-        status: item.orders.status,
-        total: Number(item.orders.total),
-        payment_method: item.orders.payment_method,
-        created_at: item.orders.created_at,
-        customer_name: item.orders.profiles?.[0]?.full_name ?? null,
-      });
-    }
-  }
-
-  const recentOrders = Array.from(uniqueOrdersMap.values())
-    .sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    )
-    .slice(0, 5);
+  const recentOrders: OrderRow[] = orders.slice(0, 5).map((order) => ({
+    id: order.id,
+    status: order.status,
+    total: Number(order.total),
+    payment_method: order.payment_method,
+    created_at: order.created_at,
+    customer_name: order.profiles?.name ?? null,
+  }));
 
   const avgRating =
     reviews.length > 0
@@ -132,7 +102,7 @@ export default async function DashboardPage() {
 
   const metrics: StoreMetrics = {
     totalRevenue,
-    totalOrders: uniqueOrdersMap.size,
+    totalOrders: orders.length,
     totalProducts,
     averageRating: avgRating,
     reviewCount: reviews.length,
