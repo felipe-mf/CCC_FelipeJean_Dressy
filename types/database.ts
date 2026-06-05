@@ -34,6 +34,136 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          city: string
+          complement: string | null
+          created_at: string
+          district: string
+          id: string
+          is_default: boolean
+          label: string
+          number: string
+          postal_code: string
+          recipient_name: string
+          state: string
+          street: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city: string
+          complement?: string | null
+          created_at?: string
+          district: string
+          id?: string
+          is_default?: boolean
+          label: string
+          number: string
+          postal_code: string
+          recipient_name: string
+          state: string
+          street: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          complement?: string | null
+          created_at?: string
+          district?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          number?: string
+          postal_code?: string
+          recipient_name?: string
+          state?: string
+          street?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cart_items: {
+        Row: {
+          cart_id: string
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          updated_at: string
+        }
+        Insert: {
+          cart_id: string
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          cart_id?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carts: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "carts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -99,6 +229,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          address_id: string | null
           cancelled_at: string | null
           completed_at: string | null
           created_at: string
@@ -114,6 +245,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address_id?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string
@@ -129,6 +261,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address_id?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string
@@ -144,6 +277,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_address_id_fkey"
+            columns: ["address_id"]
+            isOneToOne: false
+            referencedRelation: "addresses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_customer_id_fkey"
             columns: ["customer_id"]
@@ -352,6 +492,10 @@ export type Database = {
     }
     Functions: {
       generate_pickup_code: { Args: never; Returns: string }
+      place_order: {
+        Args: { p_address_id?: string; p_payment_method: string }
+        Returns: string[]
+      }
     }
     Enums: {
       [_ in never]: never

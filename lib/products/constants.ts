@@ -18,3 +18,10 @@ export const PRODUCT_CONDITIONS: readonly ProductCondition[] = [
   "good",
   "fair",
 ];
+
+export const CONDITION_LABELS: Record<ProductCondition, string> = {
+  new: "Novo",
+  like_new: "Seminovo",
+  good: "Bom estado",
+  fair: "Usado",
+};

@@ -25,12 +25,46 @@ export interface Order {
   // concluir a venda (vale para ambos os métodos de pagamento).
   pickup_code: string;
   total: number;
+  // Endereço de entrega escolhido no checkout; nulo em retirada na loja ou se o
+  // endereço foi removido do perfil depois.
+  address_id: string | null;
   // Definido apenas para 'in_store' (created_at + 5 dias).
   expires_at: string | null;
   completed_at: string | null;
   cancelled_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// Item de pedido enriquecido com dados do produto para a visão do customer.
+export interface OrderItemWithProduct {
+  id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  name: string;
+  size: string | null;
+  image_path: string | null;
+}
+
+// Pedido na listagem "Meus pedidos" do customer.
+export interface CustomerOrderRow {
+  id: string;
+  status: OrderStatus;
+  total: number;
+  payment_method: PaymentMethod;
+  pickup_code: string;
+  created_at: string;
+  store_name: string;
+  store_slug: string;
+  item_count: number;
+}
+
+// Pedido detalhado do customer (com itens e loja).
+export interface CustomerOrderDetail extends Order {
+  store_name: string;
+  store_slug: string;
+  items: OrderItemWithProduct[];
 }
 
 export interface OrderWithCustomer extends Order {

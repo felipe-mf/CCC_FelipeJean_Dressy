@@ -1,7 +1,7 @@
 import {
   OrderStatusBadge,
   PAYMENT_METHOD_LABEL,
-} from "@/app/(store)/_components/order-status-badge";
+} from "@/components/shared/order-status-badge";
 import type { OrderRow } from "@/types";
 
 export function OrdersList({ orders }: { orders: OrderRow[] }) {

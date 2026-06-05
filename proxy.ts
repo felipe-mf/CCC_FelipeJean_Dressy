@@ -40,6 +40,9 @@ export default async function middleware(request: NextRequest) {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/closet") ||
     pathname.startsWith("/pedidos") ||
+    pathname.startsWith("/carrinho") ||
+    pathname.startsWith("/checkout") ||
+    pathname.startsWith("/perfil") ||
     pathname.startsWith("/loja");
 
   if (!user && isProtectedRoute) {

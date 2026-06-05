@@ -9,7 +9,7 @@ import { productImageUrl } from "@/lib/products/image-url";
 import {
   OrderStatusBadge,
   PAYMENT_METHOD_LABEL,
-} from "@/app/(store)/_components/order-status-badge";
+} from "@/components/shared/order-status-badge";
 import type { OrderStatus, PaymentMethod, PaymentStatus } from "@/types";
 
 export interface OrderItemRow {
