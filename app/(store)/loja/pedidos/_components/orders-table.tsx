@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Clock } from "lucide-react";
 
 import { cancelOrder, confirmSale } from "@/lib/orders/actions";
+import { Spinner } from "@/components/ui/spinner";
+import { submitButtonState } from "@/components/ui/submit-button-label";
 import { productImageUrl } from "@/lib/products/image-url";
 import {
   OrderStatusBadge,
@@ -279,8 +281,9 @@ function OrderCard({
                 type="button"
                 onClick={handleConfirm}
                 disabled={isPending || code.length !== 4}
-                className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-heading hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-heading ${submitButtonState(isPending)}`}
               >
+                {isPending && <Spinner className="size-4" />}
                 Concluir venda
               </button>
               <button

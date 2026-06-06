@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { FieldInput } from "@/components/ui/field-input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { useGuardedSubmit } from "@/lib/hooks/use-guarded-submit";
 import { updateProfile } from "@/lib/profile/actions";
 
 export function ProfileForm({
@@ -14,20 +16,19 @@ export function ProfileForm({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [pending, setPending] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
-    setError(null);
-    setSaved(false);
-    setPending(true);
-    const result = await updateProfile(formData);
-    setPending(false);
-    if ("error" in result) {
-      setError(result.error);
-      return;
-    }
-    setSaved(true);
-  }
+  const { pending, action: handleSubmit } = useGuardedSubmit(
+    async (formData) => {
+      setError(null);
+      setSaved(false);
+      const result = await updateProfile(formData);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      setSaved(true);
+    },
+  );
 
   return (
     <form
@@ -68,14 +69,15 @@ export function ProfileForm({
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="group inline-flex items-center justify-between gap-3 bg-primary text-primary-foreground px-6 py-4 font-heading text-lg hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
+      <SubmitButton
+        pending={pending}
+        className="inline-flex items-center justify-between gap-3 px-6 py-4 text-lg rounded-xl"
+        trailing={
+          <span className="transition-transform group-hover:translate-x-1">→</span>
+        }
       >
-        <span>{pending ? "Salvando…" : "Salvar perfil"}</span>
-        <span className="transition-transform group-hover:translate-x-1">→</span>
-      </button>
+        {pending ? "Salvando…" : "Salvar perfil"}
+      </SubmitButton>
     </form>
   );
 }

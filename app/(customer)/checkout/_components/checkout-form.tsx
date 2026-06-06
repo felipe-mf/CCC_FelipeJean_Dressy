@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Store, Truck } from "lucide-react";
 
 import { placeOrder } from "@/lib/orders/actions";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { useGuardedSubmit } from "@/lib/hooks/use-guarded-submit";
 import type { Address, PaymentMethod } from "@/types";
 
 export function CheckoutForm({ addresses }: { addresses: Address[] }) {
@@ -16,19 +18,16 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
     defaultAddress?.id,
   );
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  const { pending, action } = useGuardedSubmit(async (formData) => {
     setError(null);
-    setPending(true);
     // placeOrder redireciona em caso de sucesso; só retorna em caso de erro.
     const result = await placeOrder(formData);
-    setPending(false);
     if (result && "error" in result) setError(result.error);
-  }
+  });
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-10">
+    <form action={action} className="flex flex-col gap-10">
       {/* Método de entrega/pagamento */}
       <fieldset className="flex flex-col gap-4">
         <legend className="text-[11px] uppercase tracking-[0.28em] text-secondary-foreground mb-3">
@@ -135,14 +134,16 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending || (method === "online" && addresses.length === 0)}
-        className="group flex items-center justify-center gap-3 bg-primary text-primary-foreground px-6 py-4 rounded-xl font-heading text-lg hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      <SubmitButton
+        pending={pending}
+        disabled={method === "online" && addresses.length === 0}
+        className="flex items-center justify-center gap-3 px-6 py-4 rounded-xl text-lg"
+        trailing={
+          <span className="transition-transform group-hover:translate-x-1">→</span>
+        }
       >
-        <span>{pending ? "Finalizando…" : "Confirmar pedido"}</span>
-        <span className="transition-transform group-hover:translate-x-1">→</span>
-      </button>
+        {pending ? "Finalizando…" : "Confirmar pedido"}
+      </SubmitButton>
     </form>
   );
 }

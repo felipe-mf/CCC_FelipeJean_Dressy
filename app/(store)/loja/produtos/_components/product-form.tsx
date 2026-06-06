@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { FieldInput } from "@/components/ui/field-input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { useGuardedSubmit } from "@/lib/hooks/use-guarded-submit";
 import { createProduct, updateProduct } from "@/lib/products/actions";
 import { PRODUCT_CONDITIONS } from "@/lib/products/constants";
 import { CONDITION_LABELS } from "@/app/(store)/loja/produtos/_components/condition-badge";
@@ -20,28 +22,25 @@ export function ProductForm({
 }) {
   const editing = Boolean(product);
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  const { pending, action } = useGuardedSubmit(async (formData) => {
     setError(null);
     setSaved(false);
-    setPending(true);
     const result = editing
       ? await updateProduct(product!.id, formData)
       : await createProduct(formData);
-    setPending(false);
     if (result && "error" in result) {
       setError(result.error);
       return;
     }
     if (editing) setSaved(true);
-  }
+  });
 
   return (
     <form
-      action={handleSubmit}
+      action={action}
       onChange={() => setSaved(false)}
       className="flex flex-col gap-8"
     >
@@ -179,24 +178,23 @@ export function ProductForm({
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending || uploading}
-        className="group inline-flex items-center justify-between bg-primary text-primary-foreground px-6 py-5 font-heading text-xl hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
+      <SubmitButton
+        pending={pending || uploading}
+        className="inline-flex items-center justify-between px-6 py-5 text-xl rounded-xl"
+        trailing={
+          <span className="transition-transform group-hover:translate-x-2">→</span>
+        }
       >
-        <span>
-          {uploading
-            ? "Enviando imagens…"
-            : pending
-              ? editing
-                ? "Salvando…"
-                : "Publicando…"
-              : editing
-                ? "Salvar alterações"
-                : "Publicar peça"}
-        </span>
-        <span className="transition-transform group-hover:translate-x-2">→</span>
-      </button>
+        {uploading
+          ? "Enviando imagens…"
+          : pending
+            ? editing
+              ? "Salvando…"
+              : "Publicando…"
+            : editing
+              ? "Salvar alterações"
+              : "Publicar peça"}
+      </SubmitButton>
     </form>
   );
 }

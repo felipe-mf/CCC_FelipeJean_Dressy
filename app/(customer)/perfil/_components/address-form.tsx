@@ -3,6 +3,9 @@
 import { useState } from "react";
 
 import { createAddress, updateAddress } from "@/lib/addresses/actions";
+import { Spinner } from "@/components/ui/spinner";
+import { submitButtonState } from "@/components/ui/submit-button-label";
+import { useGuardedSubmit } from "@/lib/hooks/use-guarded-submit";
 import type { Address } from "@/types";
 
 function Field({
@@ -49,21 +52,20 @@ export function AddressForm({
   onCancel: () => void;
 }) {
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
-    setError(null);
-    setPending(true);
-    const result = address
-      ? await updateAddress(address.id, formData)
-      : await createAddress(formData);
-    setPending(false);
-    if ("error" in result) {
-      setError(result.error);
-      return;
-    }
-    onDone();
-  }
+  const { pending, action: handleSubmit } = useGuardedSubmit(
+    async (formData) => {
+      setError(null);
+      const result = address
+        ? await updateAddress(address.id, formData)
+        : await createAddress(formData);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      onDone();
+    },
+  );
 
   return (
     <form
@@ -154,8 +156,9 @@ export function AddressForm({
         <button
           type="submit"
           disabled={pending}
-          className="bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-heading hover:bg-[#A84E1F] transition-colors disabled:opacity-50"
+          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-heading ${submitButtonState(pending)}`}
         >
+          {pending && <Spinner className="size-4" />}
           {pending ? "Salvando…" : address ? "Salvar" : "Adicionar"}
         </button>
         <button

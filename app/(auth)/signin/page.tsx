@@ -3,6 +3,8 @@
 import { signIn } from "@/lib/auth/actions";
 import { useState } from "react";
 import { FieldInput } from "@/components/ui/field-input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { useGuardedSubmit } from "@/lib/hooks/use-guarded-submit";
 import Link from "next/link";
 
 const GRAIN_SVG =
@@ -10,15 +12,14 @@ const GRAIN_SVG =
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
-    setError(null);
-    setPending(true);
-    const result = await signIn(formData);
-    setPending(false);
-    if (result?.error) setError(result.error);
-  }
+  const { pending, action: handleSubmit } = useGuardedSubmit(
+    async (formData) => {
+      setError(null);
+      const result = await signIn(formData);
+      if (result?.error) setError(result.error);
+    },
+  );
 
   return (
     <main className="min-h-screen grid md:grid-cols-2 bg-background text-foreground font-sans">
@@ -111,16 +112,17 @@ export default function LoginPage() {
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={pending}
-              className="group inline-flex items-center justify-between bg-primary text-primary-foreground px-6 py-5 font-heading text-xl hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            <SubmitButton
+              pending={pending}
+              className="inline-flex items-center justify-between px-6 py-5 text-xl"
+              trailing={
+                <span className="transition-transform group-hover:translate-x-2">
+                  →
+                </span>
+              }
             >
-              <span>{pending ? "Entrando…" : "Entrar na Dressy"}</span>
-              <span className="transition-transform group-hover:translate-x-2">
-                →
-              </span>
-            </button>
+              {pending ? "Entrando…" : "Entrar na Dressy"}
+            </SubmitButton>
           </form>
 
           <div className="flex items-center gap-4 pt-2">

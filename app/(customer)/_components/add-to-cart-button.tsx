@@ -5,6 +5,8 @@ import { useState, useTransition } from "react";
 import { ShoppingBag } from "lucide-react";
 
 import { addToCart } from "@/lib/cart/actions";
+import { Spinner } from "@/components/ui/spinner";
+import { submitButtonState } from "@/components/ui/submit-button-label";
 
 export function AddToCartButton({
   productId,
@@ -36,9 +38,13 @@ export function AddToCartButton({
         type="button"
         onClick={handleClick}
         disabled={disabled || pending}
-        className="group flex items-center justify-center gap-3 bg-primary text-primary-foreground px-6 py-4 rounded-xl font-heading text-lg hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`group flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-heading text-lg ${submitButtonState(pending)}`}
       >
-        <ShoppingBag className="size-5" strokeWidth={1.5} />
+        {pending ? (
+          <Spinner className="size-5" />
+        ) : (
+          <ShoppingBag className="size-5" strokeWidth={1.5} />
+        )}
         <span>
           {disabled
             ? "Esgotado"

@@ -5,6 +5,8 @@ import { Star } from "lucide-react";
 
 import { submitReview } from "@/lib/reviews/actions";
 import { StarRating } from "@/components/ui/star-rating";
+import { Spinner } from "@/components/ui/spinner";
+import { submitButtonState } from "@/components/ui/submit-button-label";
 import type { Review } from "@/types";
 
 interface ReviewFormProps {
@@ -107,8 +109,9 @@ export function ReviewForm({ orderId, productId, existing }: ReviewFormProps) {
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-heading hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-heading ${submitButtonState(isPending)}`}
         >
+          {isPending && <Spinner className="size-4" />}
           {isPending ? "Enviando…" : "Enviar avaliação"}
         </button>
         {error && (

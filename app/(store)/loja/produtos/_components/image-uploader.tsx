@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 
+import { Spinner } from "@/components/ui/spinner";
 import { createClient } from "@/lib/supabase/client";
 import { productImageUrl } from "@/lib/products/image-url";
 import {
@@ -158,7 +159,7 @@ export function ImageUploader({
 
         {uploading > 0 && (
           <div className="aspect-[3/4] rounded-xl border border-dashed border-primary/40 flex flex-col items-center justify-center gap-2 bg-surface-alt/40">
-            <Loader2 className="size-6 text-primary animate-spin" />
+            <Spinner className="size-6 text-primary" />
             <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Enviando…
             </span>

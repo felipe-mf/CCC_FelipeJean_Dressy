@@ -2,26 +2,27 @@
 
 import { useState } from "react";
 import { FieldInput } from "@/components/ui/field-input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { useGuardedSubmit } from "@/lib/hooks/use-guarded-submit";
 import { updateStore } from "@/lib/store/actions";
 import type { Store } from "@/types";
 
 export function EditStoreForm({ store }: { store: Store }) {
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
-    setError(null);
-    setSaved(false);
-    setPending(true);
-    const result = await updateStore(formData);
-    setPending(false);
-    if ("error" in result) {
-      setError(result.error);
-      return;
-    }
-    setSaved(true);
-  }
+  const { pending, action: handleSubmit } = useGuardedSubmit(
+    async (formData) => {
+      setError(null);
+      setSaved(false);
+      const result = await updateStore(formData);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      setSaved(true);
+    },
+  );
 
   return (
     <form
@@ -109,14 +110,15 @@ export function EditStoreForm({ store }: { store: Store }) {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="group inline-flex items-center justify-between bg-primary text-primary-foreground px-6 py-5 font-heading text-xl hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
+      <SubmitButton
+        pending={pending}
+        className="inline-flex items-center justify-between px-6 py-5 text-xl rounded-xl"
+        trailing={
+          <span className="transition-transform group-hover:translate-x-2">→</span>
+        }
       >
-        <span>{pending ? "Salvando…" : "Salvar alterações"}</span>
-        <span className="transition-transform group-hover:translate-x-2">→</span>
-      </button>
+        {pending ? "Salvando…" : "Salvar alterações"}
+      </SubmitButton>
     </form>
   );
 }

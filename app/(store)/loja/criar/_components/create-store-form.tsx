@@ -2,22 +2,21 @@
 
 import { useState } from "react";
 import { FieldInput } from "@/components/ui/field-input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { useGuardedSubmit } from "@/lib/hooks/use-guarded-submit";
 import { createStore } from "@/lib/store/actions";
 
 export function CreateStoreForm() {
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  const { pending, action } = useGuardedSubmit(async (formData) => {
     setError(null);
-    setPending(true);
     const result = await createStore(formData);
-    setPending(false);
     if (result?.error) setError(result.error);
-  }
+  });
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-8">
+    <form action={action} className="flex flex-col gap-8">
       <FieldInput
         label="Nome da loja"
         name="name"
@@ -53,16 +52,17 @@ export function CreateStoreForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="group inline-flex items-center justify-between bg-primary text-primary-foreground px-6 py-5 font-heading text-xl hover:bg-[#A84E1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
+      <SubmitButton
+        pending={pending}
+        className="inline-flex items-center justify-between px-6 py-5 text-xl rounded-xl"
+        trailing={
+          <span className="transition-transform group-hover:translate-x-2">
+            →
+          </span>
+        }
       >
-        <span>{pending ? "Abrindo vitrine…" : "Abrir minha vitrine"}</span>
-        <span className="transition-transform group-hover:translate-x-2">
-          →
-        </span>
-      </button>
+        {pending ? "Abrindo vitrine…" : "Abrir minha vitrine"}
+      </SubmitButton>
     </form>
   );
 }
