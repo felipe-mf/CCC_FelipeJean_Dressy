@@ -4,11 +4,13 @@ import { ChevronRight } from "lucide-react";
 
 import { formatBRL, formatDateTime } from "@/lib/format";
 import { getCustomerOrder } from "@/lib/orders/queries";
+import { getOrderReviews } from "@/lib/reviews/queries";
 import {
   OrderStatusBadge,
   PAYMENT_METHOD_LABEL,
 } from "@/components/shared/order-status-badge";
 import { ProductImage } from "@/components/shared/product-image";
+import { ReviewForm } from "@/app/(customer)/pedidos/[id]/_components/review-form";
 
 export default async function OrderDetailPage({
   params,
@@ -20,6 +22,8 @@ export default async function OrderDetailPage({
   if (!order) notFound();
 
   const isPending = order.status === "pending";
+  const isCompleted = order.status === "completed";
+  const reviews = isCompleted ? await getOrderReviews(id) : {};
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-10 md:py-14 max-w-4xl">
@@ -76,28 +80,39 @@ export default async function OrderDetailPage({
         </span>
         <div className="divide-y divide-border">
           {order.items.map((item) => (
-            <div key={item.id} className="flex items-center gap-4 py-4">
-              <div className="relative aspect-[3/4] w-16 shrink-0 overflow-hidden rounded-lg bg-secondary/40">
-                <ProductImage
-                  path={item.image_path}
-                  alt={item.name}
-                  name={item.name}
-                  sizes="64px"
-                  fallbackClassName="text-base"
-                />
-              </div>
-              <div className="flex flex-1 flex-col">
-                <span className="text-sm font-medium text-secondary-foreground">
-                  {item.name}
+            <div key={item.id} className="flex flex-col gap-3 py-4">
+              <div className="flex items-center gap-4">
+                <div className="relative aspect-[3/4] w-16 shrink-0 overflow-hidden rounded-lg bg-secondary/40">
+                  <ProductImage
+                    path={item.image_path}
+                    alt={item.name}
+                    name={item.name}
+                    sizes="64px"
+                    fallbackClassName="text-base"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col">
+                  <span className="text-sm font-medium text-secondary-foreground">
+                    {item.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {item.quantity}× {formatBRL(item.unit_price)}
+                    {item.size ? ` · Tam. ${item.size}` : ""}
+                  </span>
+                </div>
+                <span className="text-sm text-foreground whitespace-nowrap">
+                  {formatBRL(item.unit_price * item.quantity)}
                 </span>
-                <span className="text-xs text-muted-foreground">
-                  {item.quantity}× {formatBRL(item.unit_price)}
-                  {item.size ? ` · Tam. ${item.size}` : ""}
-                </span>
               </div>
-              <span className="text-sm text-foreground whitespace-nowrap">
-                {formatBRL(item.unit_price * item.quantity)}
-              </span>
+              {isCompleted && (
+                <div className="pl-20">
+                  <ReviewForm
+                    orderId={order.id}
+                    productId={item.product_id}
+                    existing={reviews[item.product_id]}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
