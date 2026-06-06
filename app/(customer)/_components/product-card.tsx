@@ -5,7 +5,13 @@ import { formatBRL } from "@/lib/format";
 import { ProductImage } from "@/components/shared/product-image";
 import type { ProductListItem } from "@/types";
 
-export function ProductCard({ product }: { product: ProductListItem }) {
+export function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: ProductListItem;
+  priority?: boolean;
+}) {
   return (
     <Link
       href={`/produto/${product.id}`}
@@ -16,6 +22,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
           path={product.image_path}
           alt={product.name}
           name={product.name}
+          priority={priority}
           sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
         />

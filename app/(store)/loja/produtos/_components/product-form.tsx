@@ -143,7 +143,12 @@ export function ProductForm({
         />
       </div>
 
+      {/* Remonta quando o conjunto de imagens persistidas muda: após salvar,
+          revalidatePath traz `images` com as linhas novas, descartando o
+          estado transitório do uploader (que senão ficaria reenviável →
+          linhas duplicadas, ou removível só no Storage → linha órfã / 400). */}
       <ImageUploader
+        key={images.map((img) => img.path).join(",")}
         storeId={storeId}
         existing={images}
         onUploadingChange={setUploading}

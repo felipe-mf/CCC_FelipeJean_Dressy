@@ -18,6 +18,10 @@ const SORT_OPTIONS: { value: MarketplaceSort; label: string }[] = [
   { value: "price_desc", label: "Maior preço" },
 ];
 
+// Imagens da primeira linha acima da dobra (lg = 4 colunas): carregam com
+// prioridade para não atrasar o LCP. Mantenha em sincronia com `lg:grid-cols-4`.
+const PRIORITY_IMAGE_COUNT = 4;
+
 function parseSort(value: string | undefined): MarketplaceSort {
   if (value === "price_asc" || value === "price_desc") return value;
   return "recent";
@@ -86,8 +90,12 @@ export default async function MarketplacePage({
         </p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product, i) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              priority={i < PRIORITY_IMAGE_COUNT}
+            />
           ))}
         </div>
       )}

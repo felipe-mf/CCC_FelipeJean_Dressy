@@ -185,7 +185,14 @@ export async function updateProduct(productId: string, formData: FormData) {
   const kept = (existingImages ?? []).filter(
     (img) => !removePaths.includes(img.path),
   );
-  if (kept.length + newPaths.length > MAX_IMAGES_PER_PRODUCT) {
+
+  // Defesa contra reenvio do mesmo formulário: remove repetições no próprio
+  // envio e ignora paths já vinculados ao produto, para não criar linhas
+  // duplicadas (mesmo path) em product_images.
+  const keptPaths = new Set(kept.map((img) => img.path));
+  const pathsToInsert = [...new Set(newPaths)].filter((p) => !keptPaths.has(p));
+
+  if (kept.length + pathsToInsert.length > MAX_IMAGES_PER_PRODUCT) {
     return { error: `No máximo ${MAX_IMAGES_PER_PRODUCT} imagens por produto.` };
   }
 
@@ -209,7 +216,7 @@ export async function updateProduct(productId: string, formData: FormData) {
   const rowError = await insertImageRows(
     supabase,
     productId,
-    newPaths,
+    pathsToInsert,
     nextPosition,
   );
   if (rowError) return { error: rowError };
