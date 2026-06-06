@@ -1,15 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Truck, Undo2 } from "lucide-react";
 
 import { CONDITION_LABELS } from "@/lib/products/constants";
 import { formatBRL } from "@/lib/format";
-import { productImageUrl } from "@/lib/products/image-url";
 import { getProductById, getRelatedProducts } from "@/lib/products/queries";
-import { ProductImage } from "@/components/shared/product-image";
 import { AddToCartButton } from "@/app/(customer)/_components/add-to-cart-button";
 import { ProductCard } from "@/app/(customer)/_components/product-card";
+import { ProductGallery } from "@/app/(customer)/produto/[id]/_components/product-gallery";
 
 export async function generateMetadata({
   params,
@@ -35,8 +33,6 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const related = await getRelatedProducts(product.store_id, product.id);
-  const coverPath = product.images[0]?.path ?? null;
-  const thumbs = product.images.slice(0, 4);
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-10 md:py-14">
@@ -53,38 +49,12 @@ export default async function ProductPage({
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
-        <section className="lg:col-span-7 flex flex-col gap-4">
-          <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-secondary/40">
-            <ProductImage
-              path={coverPath}
-              alt={product.name}
-              name={product.name}
-              priority
-              sizes="(min-width: 1024px) 58vw, 100vw"
-              fallbackClassName="text-6xl"
-            />
-            <span className="absolute top-4 left-4 bg-background/90 text-secondary-foreground text-[10px] uppercase tracking-[0.2em] px-3 py-1.5 rounded-full">
-              {CONDITION_LABELS[product.condition]}
-            </span>
-          </div>
-          {thumbs.length > 1 && (
-            <div className="grid grid-cols-4 gap-3">
-              {thumbs.map((img) => (
-                <div
-                  key={img.path}
-                  className="relative aspect-square overflow-hidden rounded-xl bg-secondary/40 ring-1 ring-border"
-                >
-                  <Image
-                    src={productImageUrl(img.path)}
-                    alt=""
-                    fill
-                    sizes="20vw"
-                    className="object-cover opacity-90"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+        <section className="lg:col-span-7">
+          <ProductGallery
+            images={product.images}
+            name={product.name}
+            conditionLabel={CONDITION_LABELS[product.condition]}
+          />
         </section>
 
         <aside className="lg:col-span-5 lg:sticky lg:top-32 lg:self-start flex flex-col gap-8">
