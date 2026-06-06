@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 
 interface MetricCardProps {
@@ -6,6 +7,7 @@ interface MetricCardProps {
   icon: LucideIcon;
   eyebrow?: string;
   className?: string;
+  href?: string;
 }
 
 export function MetricCard({
@@ -14,11 +16,12 @@ export function MetricCard({
   icon: Icon,
   eyebrow,
   className = "",
+  href,
 }: MetricCardProps) {
-  return (
-    <div
-      className={`relative bg-card border border-border rounded-2xl p-6 flex flex-col justify-between gap-6 overflow-hidden ${className}`}
-    >
+  const baseClassName = `relative bg-card border border-border rounded-2xl p-6 flex flex-col justify-between gap-6 overflow-hidden ${className}`;
+
+  const content = (
+    <>
       <div className="flex items-start justify-between">
         {eyebrow ? (
           <span className="text-[11px] uppercase tracking-[0.28em] text-primary flex items-center gap-2">
@@ -42,6 +45,19 @@ export function MetricCard({
           {label}
         </span>
       </div>
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={`${baseClassName} cursor-pointer transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:border-primary/60`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={baseClassName}>{content}</div>;
 }

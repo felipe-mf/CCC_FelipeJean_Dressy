@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   OrderStatusBadge,
   PAYMENT_METHOD_LABEL,
@@ -30,9 +32,10 @@ export function OrdersList({ orders }: { orders: OrderRow[] }) {
           {orders.map((order) => {
             const shortId = order.id.slice(-6).toUpperCase();
             return (
-              <div
+              <Link
                 key={order.id}
-                className="flex items-center gap-3 px-6 py-4 hover:bg-muted/20 transition-colors"
+                href={`/loja/pedidos?focus=${order.id}`}
+                className="flex items-center gap-3 px-6 py-4 cursor-pointer hover:bg-muted/20 transition-colors"
               >
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -61,7 +64,7 @@ export function OrdersList({ orders }: { orders: OrderRow[] }) {
                   </span>
                   <OrderStatusBadge status={order.status} />
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

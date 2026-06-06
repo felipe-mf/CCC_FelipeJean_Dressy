@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 
@@ -13,6 +14,7 @@ import type { Product } from "@/types";
 export type ProductRow = Product & { cover_path: string | null };
 
 export function ProductsListTable({ products }: { products: ProductRow[] }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +113,8 @@ export function ProductsListTable({ products }: { products: ProductRow[] }) {
                 return (
                   <tr
                     key={product.id}
-                    className={`border-b border-border last:border-0 transition-colors hover:bg-muted/30 ${
+                    onClick={() => router.push(`/loja/produtos/${product.id}`)}
+                    className={`cursor-pointer border-b border-border last:border-0 transition-colors hover:bg-muted/30 ${
                       busy ? "opacity-60" : ""
                     } ${i % 2 === 1 ? "bg-muted/10" : ""}`}
                   >
@@ -161,7 +164,10 @@ export function ProductsListTable({ products }: { products: ProductRow[] }) {
                     <td className="px-4 py-3 text-center hidden lg:table-cell text-muted-foreground">
                       {product.stock}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td
+                      className="px-4 py-3 text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         type="button"
                         onClick={() => handleToggle(product)}
@@ -181,7 +187,10 @@ export function ProductsListTable({ products }: { products: ProductRow[] }) {
                         </span>
                       </button>
                     </td>
-                    <td className="px-6 py-3 text-right">
+                    <td
+                      className="px-6 py-3 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="inline-flex items-center gap-1">
                         <Link
                           href={`/loja/produtos/${product.id}`}

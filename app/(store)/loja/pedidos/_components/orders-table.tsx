@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Clock } from "lucide-react";
 
 import { cancelOrder, confirmSale } from "@/lib/orders/actions";
@@ -50,8 +50,34 @@ function expiryLabel(expiresAt: string | null): string | null {
   return days === 1 ? "Expira amanhã" : `Expira em ${days} dias`;
 }
 
-export function OrdersTable({ orders }: { orders: OrderRow[] }) {
-  const [filter, setFilter] = useState<Filter>("pending");
+function filterForOrder(orders: OrderRow[], focusId?: string): Filter {
+  if (!focusId) return "pending";
+  const target = orders.find((o) => o.id === focusId);
+  if (!target) return "pending";
+  return FILTERS.find((f) => f.match.includes(target.status))?.key ?? "pending";
+}
+
+export function OrdersTable({
+  orders,
+  focusId,
+}: {
+  orders: OrderRow[];
+  focusId?: string;
+}) {
+  const [filter, setFilter] = useState<Filter>(() =>
+    filterForOrder(orders, focusId),
+  );
+  const [highlightId, setHighlightId] = useState<string | null>(
+    focusId ?? null,
+  );
+
+  useEffect(() => {
+    if (!highlightId) return;
+    const el = document.getElementById(`order-${highlightId}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const timer = setTimeout(() => setHighlightId(null), 2500);
+    return () => clearTimeout(timer);
+  }, [highlightId]);
 
   const counts = useMemo(() => {
     const map: Record<Filter, number> = {
@@ -109,7 +135,11 @@ export function OrdersTable({ orders }: { orders: OrderRow[] }) {
       ) : (
         <div className="flex flex-col gap-4">
           {visible.map((order) => (
-            <OrderCard key={order.id} order={order} />
+            <OrderCard
+              key={order.id}
+              order={order}
+              highlighted={order.id === highlightId}
+            />
           ))}
         </div>
       )}
@@ -117,7 +147,13 @@ export function OrdersTable({ orders }: { orders: OrderRow[] }) {
   );
 }
 
-function OrderCard({ order }: { order: OrderRow }) {
+function OrderCard({
+  order,
+  highlighted,
+}: {
+  order: OrderRow;
+  highlighted: boolean;
+}) {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -148,8 +184,13 @@ function OrderCard({ order }: { order: OrderRow }) {
 
   return (
     <article
-      className={`bg-card border border-border rounded-2xl overflow-hidden transition-opacity ${
+      id={`order-${order.id}`}
+      className={`bg-card border rounded-2xl overflow-hidden transition-all duration-500 ${
         isPending ? "opacity-60" : ""
+      } ${
+        highlighted
+          ? "border-primary ring-2 ring-primary/40"
+          : "border-border"
       }`}
     >
       <header className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-border">

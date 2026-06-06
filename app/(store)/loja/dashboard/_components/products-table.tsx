@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { Product, ProductCondition } from "@/types";
 
 const CONDITION_LABELS: Record<ProductCondition, string> = {
@@ -57,11 +59,17 @@ export function ProductsTable({ products }: { products: Product[] }) {
             {products.map((product, i) => (
               <tr
                 key={product.id}
-                className={`border-b border-border last:border-0 transition-colors hover:bg-muted/30 ${
+                className={`relative cursor-pointer border-b border-border last:border-0 transition-colors hover:bg-muted/30 ${
                   i % 2 === 1 ? "bg-muted/10" : ""
                 }`}
               >
                 <td className="px-6 py-3.5">
+                  <Link
+                    href={`/loja/produtos/${product.id}`}
+                    className="absolute inset-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-primary"
+                  >
+                    <span className="sr-only">Editar {product.name}</span>
+                  </Link>
                   <div className="flex flex-col gap-0.5">
                     <span className="font-heading text-foreground leading-tight line-clamp-1">
                       {product.name}

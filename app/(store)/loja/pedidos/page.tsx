@@ -26,7 +26,12 @@ interface OrderQueryRow {
     | null;
 }
 
-export default async function OrdersPage() {
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ focus?: string }>;
+}) {
+  const { focus } = await searchParams;
   const { supabase, store } = await requireStorePage();
 
   const { data } = await supabase
@@ -96,7 +101,7 @@ export default async function OrdersPage() {
         </p>
       </header>
 
-      <OrdersTable orders={orders} />
+      <OrdersTable orders={orders} focusId={focus} />
     </section>
   );
 }

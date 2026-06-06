@@ -141,12 +141,14 @@ export default async function DashboardPage() {
           label="Pedidos"
           value={String(metrics.totalOrders)}
           icon={ShoppingBag}
+          href="/loja/pedidos"
         />
         <MetricCard
           className="col-span-6 md:col-span-2"
           label="Produtos"
           value={String(metrics.totalProducts)}
           icon={Package}
+          href="/loja/produtos"
         />
         <MetricCard
           className="col-span-12 md:col-span-2"
@@ -157,6 +159,7 @@ export default async function DashboardPage() {
               : "—"
           }
           icon={Star}
+          href="/loja/avaliacoes"
         />
       </section>
 
