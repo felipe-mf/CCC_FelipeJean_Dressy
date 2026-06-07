@@ -4,6 +4,7 @@ import {
   getMarketplaceProducts,
   type MarketplaceSort,
 } from "@/lib/products/queries";
+import { getFavoritesContext } from "@/lib/favorites/context";
 import { ProductCard } from "@/app/(customer)/_components/product-card";
 
 export const metadata = {
@@ -34,7 +35,10 @@ export default async function MarketplacePage({
 }) {
   const { sort } = await searchParams;
   const activeSort = parseSort(sort);
-  const products = await getMarketplaceProducts(activeSort);
+  const [products, { isCustomer, favoriteIds }] = await Promise.all([
+    getMarketplaceProducts(activeSort),
+    getFavoritesContext(),
+  ]);
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-16 md:py-20">
@@ -95,6 +99,7 @@ export default async function MarketplacePage({
               key={product.id}
               product={product}
               priority={i < PRIORITY_IMAGE_COUNT}
+              favorited={isCustomer ? favoriteIds.has(product.id) : undefined}
             />
           ))}
         </div>

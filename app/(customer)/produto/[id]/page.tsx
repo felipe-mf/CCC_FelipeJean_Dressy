@@ -5,6 +5,7 @@ import { ChevronRight, Truck, Undo2 } from "lucide-react";
 import { CONDITION_LABELS } from "@/lib/products/constants";
 import { formatBRL } from "@/lib/format";
 import { getProductById, getRelatedProducts } from "@/lib/products/queries";
+import { getFavoritesContext } from "@/lib/favorites/context";
 import { AddToCartButton } from "@/app/(customer)/_components/add-to-cart-button";
 import { ProductCard } from "@/app/(customer)/_components/product-card";
 import { ProductGallery } from "@/app/(customer)/produto/[id]/_components/product-gallery";
@@ -32,7 +33,10 @@ export default async function ProductPage({
   const product = await getProductById(id);
   if (!product) notFound();
 
-  const related = await getRelatedProducts(product.store_id, product.id);
+  const [related, { isCustomer, favoriteIds }] = await Promise.all([
+    getRelatedProducts(product.store_id, product.id),
+    getFavoritesContext(),
+  ]);
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-10 md:py-14">
@@ -167,7 +171,11 @@ export default async function ProductPage({
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
             {related.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard
+                key={p.id}
+                product={p}
+                favorited={isCustomer ? favoriteIds.has(p.id) : undefined}
+              />
             ))}
           </div>
         </section>

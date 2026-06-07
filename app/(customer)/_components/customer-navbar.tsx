@@ -3,7 +3,6 @@ import { Search, Heart, ShoppingBag, UserRound } from "lucide-react";
 
 const navLinks = [
   { href: "/marketplace", label: "Marketplace" },
-  { href: "/marketplace?categoria=novidades", label: "Novidades" },
   { href: "/closet", label: "Meu closet" },
   { href: "/pedidos", label: "Pedidos" },
 ];
