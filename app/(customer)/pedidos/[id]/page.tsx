@@ -10,6 +10,7 @@ import {
   PAYMENT_METHOD_LABEL,
 } from "@/components/shared/order-status-badge";
 import { ProductImage } from "@/components/shared/product-image";
+import { PixPayment } from "@/app/(customer)/pedidos/[id]/_components/pix-payment";
 import { ReviewForm } from "@/app/(customer)/pedidos/[id]/_components/review-form";
 
 export default async function OrderDetailPage({
@@ -28,6 +29,21 @@ export default async function OrderDetailPage({
     order.payment_method === "online" && order.delivery_address
       ? formatAddressLines(order.delivery_address)
       : null;
+  // Bloco Pix aparece em qualquer pedido 'online' que ainda esteja pendente —
+  // tanto na fase "aguardando Pix" (mostra QR/copia-cola) quanto após pago
+  // (vira card de confirmação). Some quando o pedido é concluído ou cancelado.
+  const showPix =
+    isPending &&
+    order.payment_method === "online" &&
+    order.pix_br_code !== null &&
+    order.pix_qr_image !== null &&
+    order.pix_expires_at !== null;
+  const pixPending =
+    showPix && order.payment_status === "pending";
+  const pixPaidPending =
+    isPending &&
+    order.payment_method === "online" &&
+    order.payment_status === "paid";
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-10 md:py-14 max-w-4xl">
@@ -56,10 +72,21 @@ export default async function OrderDetailPage({
         </span>
       </header>
 
+      {showPix && (
+        <PixPayment
+          orderId={order.id}
+          brCode={order.pix_br_code!}
+          qrImage={order.pix_qr_image!}
+          expiresAt={order.pix_expires_at!}
+          canSimulate={process.env.NEXT_PUBLIC_ALLOW_PIX_SIMULATION === "1"}
+          paymentStatus={order.payment_status}
+        />
+      )}
+
       {/* Código de retirada em destaque */}
       <div
         className={`flex flex-col gap-2 rounded-2xl border p-6 mb-10 ${
-          isPending
+          isPending && !pixPending
             ? "border-primary bg-primary-light/40"
             : "border-border bg-surface"
         }`}
@@ -71,9 +98,13 @@ export default async function OrderDetailPage({
           {order.pickup_code}
         </span>
         <p className="text-xs text-muted-foreground max-w-md leading-snug">
-          {isPending
-            ? "Informe este código na loja para concluir a compra. A venda só é finalizada com ele."
-            : "Este pedido já foi finalizado."}
+          {pixPending
+            ? "Conclua o pagamento Pix acima. Depois apresente este código na loja."
+            : pixPaidPending
+              ? "Pix recebido. Apresente este código na loja para o lojista finalizar a venda."
+              : isPending
+                ? "Informe este código na loja para concluir a compra. A venda só é finalizada com ele."
+                : "Este pedido já foi finalizado."}
         </p>
       </div>
 

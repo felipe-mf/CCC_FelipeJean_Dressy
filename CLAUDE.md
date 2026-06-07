@@ -90,6 +90,14 @@ As skills abaixo estão em `.claude/skills/` e podem ser acionadas quando o cont
 - **frontend-design** — construção de componentes/páginas frontend com acabamento visual diferenciado, evitando estética genérica de IA
 - **claude-opus-4-5-migration** — migração de prompts e código de Sonnet 4.0/4.5 ou Opus 4.1 para Opus 4.5
 
+## Integrações Externas
+
+- **AbacatePay (gateway de pagamento Pix):** antes de mexer em qualquer
+  código que toque cobrança, checkout online, webhooks de pagamento ou
+  ambiente de simulação, leia `ABACATEPAY.md` na raiz do projeto. Ele
+  resume endpoints, autenticação, formato de valores (centavos) e links
+  para a documentação oficial.
+
 ## O Que NÃO Fazer
 
 - Não instalar bibliotecas sem mencionar — confirme comigo antes

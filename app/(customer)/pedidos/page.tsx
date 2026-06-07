@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Package } from "lucide-react";
+import { CheckCircle2, ChevronRight, Clock, Package } from "lucide-react";
 
 import { formatBRL, formatDate } from "@/lib/format";
 import { getCustomerOrders } from "@/lib/orders/queries";
@@ -65,11 +65,24 @@ export default async function OrdersPage() {
                   {order.item_count === 1 ? "peça" : "peças"} ·{" "}
                   {PAYMENT_METHOD_LABEL[order.payment_method]}
                 </span>
-                {order.status === "pending" && (
-                  <span className="text-[11px] uppercase tracking-[0.18em] text-primary">
-                    Código de retirada: {order.pickup_code}
-                  </span>
-                )}
+                {order.status === "pending" &&
+                  (order.payment_method === "online" &&
+                  order.payment_status === "pending" ? (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-amber-700">
+                      <Clock className="size-3" />
+                      Aguardando pagamento Pix
+                    </span>
+                  ) : order.payment_method === "online" &&
+                    order.payment_status === "paid" ? (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-emerald-700">
+                      <CheckCircle2 className="size-3" />
+                      Pago — aguardando loja confirmar
+                    </span>
+                  ) : (
+                    <span className="text-[11px] uppercase tracking-[0.18em] text-primary">
+                      Código de retirada: {order.pickup_code}
+                    </span>
+                  ))}
               </div>
               <span className="font-heading text-xl text-foreground whitespace-nowrap">
                 {formatBRL(order.total)}

@@ -229,6 +229,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          abacate_billing_id: string | null
           address_id: string | null
           cancelled_at: string | null
           completed_at: string | null
@@ -239,12 +240,16 @@ export type Database = {
           payment_method: string
           payment_status: string
           pickup_code: string
+          pix_br_code: string | null
+          pix_expires_at: string | null
+          pix_qr_image: string | null
           status: string
           store_id: string
           total: number
           updated_at: string
         }
         Insert: {
+          abacate_billing_id?: string | null
           address_id?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
@@ -255,12 +260,16 @@ export type Database = {
           payment_method: string
           payment_status?: string
           pickup_code?: string
+          pix_br_code?: string | null
+          pix_expires_at?: string | null
+          pix_qr_image?: string | null
           status?: string
           store_id: string
           total?: number
           updated_at?: string
         }
         Update: {
+          abacate_billing_id?: string | null
           address_id?: string | null
           cancelled_at?: string | null
           completed_at?: string | null
@@ -271,6 +280,9 @@ export type Database = {
           payment_method?: string
           payment_status?: string
           pickup_code?: string
+          pix_br_code?: string | null
+          pix_expires_at?: string | null
+          pix_qr_image?: string | null
           status?: string
           store_id?: string
           total?: number
@@ -549,7 +561,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attach_pix_charge: {
+        Args: {
+          p_billing_id: string
+          p_br_code: string
+          p_expires_at: string
+          p_order_id: string
+          p_qr_image: string
+        }
+        Returns: undefined
+      }
+      cancel_own_pending_orders: {
+        Args: { p_order_ids: string[] }
+        Returns: undefined
+      }
       generate_pickup_code: { Args: never; Returns: string }
+      mark_order_paid: { Args: { p_order_id: string }; Returns: undefined }
       place_order: {
         Args: { p_address_id?: string; p_methods: Json }
         Returns: string[]

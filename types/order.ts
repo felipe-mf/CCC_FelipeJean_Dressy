@@ -28,8 +28,16 @@ export interface Order {
   // Endereço de entrega escolhido no checkout; nulo em retirada na loja ou se o
   // endereço foi removido do perfil depois.
   address_id: string | null;
-  // Definido apenas para 'in_store' (created_at + 5 dias).
+  // 'in_store' = created_at + 5 dias; 'online' = created_at + 30 min.
   expires_at: string | null;
+  // Cobrança Pix na AbacatePay (Checkout Transparente). Preenchido na criação
+  // do pedido 'online'; nulo em 'in_store'.
+  abacate_billing_id: string | null;
+  // EMV BR Code (copia-e-cola).
+  pix_br_code: string | null;
+  // PNG do QR Code em base64 (já com prefixo data:image/png;base64,).
+  pix_qr_image: string | null;
+  pix_expires_at: string | null;
   completed_at: string | null;
   cancelled_at: string | null;
   created_at: string;
@@ -66,6 +74,7 @@ export interface CustomerOrderRow {
   status: OrderStatus;
   total: number;
   payment_method: PaymentMethod;
+  payment_status: PaymentStatus;
   pickup_code: string;
   created_at: string;
   store_name: string;

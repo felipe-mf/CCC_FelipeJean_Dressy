@@ -21,7 +21,7 @@ export async function getCustomerOrders(): Promise<CustomerOrderRow[]> {
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, status, total, payment_method, pickup_code, created_at, stores!inner(name, slug), order_items(id)",
+      "id, status, total, payment_method, payment_status, pickup_code, created_at, stores!inner(name, slug), order_items(id)",
     )
     .eq("customer_id", user.id)
     .order("created_at", { ascending: false });
@@ -30,7 +30,13 @@ export async function getCustomerOrders(): Promise<CustomerOrderRow[]> {
 
   type Row = Pick<
     Order,
-    "id" | "status" | "total" | "payment_method" | "pickup_code" | "created_at"
+    | "id"
+    | "status"
+    | "total"
+    | "payment_method"
+    | "payment_status"
+    | "pickup_code"
+    | "created_at"
   > & {
     stores: StoreEmbed;
     order_items: { id: string }[] | null;
@@ -41,6 +47,7 @@ export async function getCustomerOrders(): Promise<CustomerOrderRow[]> {
     status: o.status,
     total: o.total,
     payment_method: o.payment_method,
+    payment_status: o.payment_status,
     pickup_code: o.pickup_code,
     created_at: o.created_at,
     store_name: o.stores.name,
