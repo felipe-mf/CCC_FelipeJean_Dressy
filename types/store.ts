@@ -7,6 +7,9 @@ export interface Store {
   logo_url: string | null;
   banner_url: string | null;
   is_active: boolean;
+  // Quando false, a loja só atende por retirada — a opção de entrega não
+  // aparece no checkout para nenhuma peça desta loja.
+  offers_delivery: boolean;
   created_at: string;
   updated_at: string;
 }

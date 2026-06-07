@@ -32,3 +32,28 @@ const dateTime = new Intl.DateTimeFormat("pt-BR", {
 export function formatDateTime(value: string | Date): string {
   return dateTime.format(typeof value === "string" ? new Date(value) : value);
 }
+
+// Endereço em duas linhas para exibição. `line1` é logradouro + número (+
+// complemento); `line2` é bairro, cidade/UF e CEP. As telas decidem se as
+// renderizam empilhadas ou unidas por " · ".
+type FormattableAddress = {
+  street: string;
+  number: string;
+  complement: string | null;
+  district: string;
+  city: string;
+  state: string;
+  postal_code: string;
+};
+
+export function formatAddressLines(addr: FormattableAddress): {
+  line1: string;
+  line2: string;
+} {
+  return {
+    line1: `${addr.street}, ${addr.number}${
+      addr.complement ? ` — ${addr.complement}` : ""
+    }`,
+    line2: `${addr.district}, ${addr.city}/${addr.state} · ${addr.postal_code}`,
+  };
+}

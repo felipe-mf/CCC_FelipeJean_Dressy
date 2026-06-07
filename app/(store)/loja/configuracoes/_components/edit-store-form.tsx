@@ -104,6 +104,23 @@ export function EditStoreForm({ store }: { store: Store }) {
         />
       </label>
 
+      <label className="group flex items-center justify-between gap-4 border-b border-border py-3 cursor-pointer">
+        <span className="flex flex-col gap-1">
+          <span className="text-[11px] uppercase tracking-[0.28em] text-secondary-foreground">
+            Faz entregas
+          </span>
+          <span className="text-xs text-muted-foreground italic font-heading">
+            Quando desativado, os clientes só podem retirar na loja.
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          name="offers_delivery"
+          defaultChecked={store.offers_delivery}
+          className="size-5 shrink-0 accent-[#C2622A] cursor-pointer"
+        />
+      </label>
+
       {error && (
         <p className="text-sm text-destructive border-l-2 border-destructive pl-3 font-heading italic">
           {error}

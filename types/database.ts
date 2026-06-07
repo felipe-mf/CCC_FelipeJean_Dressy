@@ -503,6 +503,7 @@ export type Database = {
           is_active: boolean
           logo_url: string | null
           name: string
+          offers_delivery: boolean
           owner_id: string
           slug: string
           updated_at: string
@@ -515,6 +516,7 @@ export type Database = {
           is_active?: boolean
           logo_url?: string | null
           name: string
+          offers_delivery?: boolean
           owner_id: string
           slug: string
           updated_at?: string
@@ -527,6 +529,7 @@ export type Database = {
           is_active?: boolean
           logo_url?: string | null
           name?: string
+          offers_delivery?: boolean
           owner_id?: string
           slug?: string
           updated_at?: string
@@ -548,7 +551,7 @@ export type Database = {
     Functions: {
       generate_pickup_code: { Args: never; Returns: string }
       place_order: {
-        Args: { p_address_id?: string; p_payment_method: string }
+        Args: { p_address_id?: string; p_methods: Json }
         Returns: string[]
       }
     }

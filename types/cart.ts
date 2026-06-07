@@ -31,4 +31,6 @@ export interface CartItemWithProduct {
   store_id: string;
   store_name: string;
   store_slug: string;
+  // Se a loja faz entregas — controla as opções de recebimento no checkout.
+  store_offers_delivery: boolean;
 }

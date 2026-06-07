@@ -3,7 +3,12 @@ import {
   OrdersTable,
   type OrderRow,
 } from "@/app/(store)/loja/pedidos/_components/orders-table";
-import type { OrderStatus, PaymentMethod, PaymentStatus } from "@/types";
+import type {
+  OrderAddress,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "@/types";
 
 interface OrderQueryRow {
   id: string;
@@ -14,6 +19,7 @@ interface OrderQueryRow {
   expires_at: string | null;
   created_at: string;
   profiles: { name: string | null } | null;
+  addresses: OrderAddress | null;
   order_items:
     | {
         quantity: number;
@@ -46,6 +52,16 @@ export default async function OrdersPage({
       expires_at,
       created_at,
       profiles!orders_customer_id_fkey ( name ),
+      addresses (
+        recipient_name,
+        postal_code,
+        street,
+        number,
+        complement,
+        district,
+        city,
+        state
+      ),
       order_items (
         quantity,
         unit_price,
@@ -69,6 +85,7 @@ export default async function OrdersPage({
       expires_at: order.expires_at,
       created_at: order.created_at,
       customer_name: order.profiles?.name ?? null,
+      address: order.addresses,
       items: (order.order_items ?? []).map((item) => {
         const cover = [...(item.products?.product_images ?? [])].sort(
           (a, b) => a.position - b.position,

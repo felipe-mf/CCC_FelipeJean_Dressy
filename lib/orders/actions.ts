@@ -77,18 +77,34 @@ export async function placeOrder(formData: FormData) {
   if ("error" in session) return session;
   const { supabase } = session;
 
-  const paymentMethod = formData.get("payment_method");
-  if (paymentMethod !== "online" && paymentMethod !== "in_store") {
-    return { error: "Selecione um método de pagamento." };
+  // O cliente escolhe entrega/retirada por loja: { "<store_id>": método }.
+  const rawMethods = formData.get("methods");
+  let methods: Record<string, unknown>;
+  let values: unknown[];
+  try {
+    const parsed = JSON.parse(typeof rawMethods === "string" ? rawMethods : "");
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      throw new Error("inválido");
+    }
+    values = Object.values(parsed);
+    if (
+      values.length === 0 ||
+      !values.every((m) => m === "online" || m === "in_store")
+    ) {
+      throw new Error("inválido");
+    }
+    methods = parsed as Record<string, unknown>;
+  } catch {
+    return { error: "Selecione como receber cada loja." };
   }
 
   const addressId = (formData.get("address_id") as string | null) || null;
-  if (paymentMethod === "online" && !addressId) {
+  if (values.includes("online") && !addressId) {
     return { error: "Selecione um endereço de entrega." };
   }
 
   const { data, error } = await supabase.rpc("place_order", {
-    p_payment_method: paymentMethod,
+    p_methods: methods,
     p_address_id: addressId,
   });
 
@@ -102,6 +118,11 @@ export async function placeOrder(formData: FormData) {
     }
     if (msg.includes("Endereço inválido")) {
       return { error: "Endereço inválido." };
+    }
+    if (msg.includes("Esta loja não faz entrega")) {
+      return {
+        error: "Uma das lojas só faz retirada. Revise as opções de recebimento.",
+      };
     }
     return { error: msg || "Falha ao finalizar o pedido." };
   }

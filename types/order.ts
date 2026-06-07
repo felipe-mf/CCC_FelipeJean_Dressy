@@ -36,6 +36,19 @@ export interface Order {
   updated_at: string;
 }
 
+// Endereço de entrega de um pedido (snapshot exibido nas telas de pedido).
+// Presente apenas em pedidos com entrega ('online').
+export interface OrderAddress {
+  recipient_name: string;
+  postal_code: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  district: string;
+  city: string;
+  state: string;
+}
+
 // Item de pedido enriquecido com dados do produto para a visão do customer.
 export interface OrderItemWithProduct {
   id: string;
@@ -64,6 +77,8 @@ export interface CustomerOrderRow {
 export interface CustomerOrderDetail extends Order {
   store_name: string;
   store_slug: string;
+  // Endereço de entrega — presente apenas em pedidos 'online'.
+  delivery_address: OrderAddress | null;
   items: OrderItemWithProduct[];
 }
 

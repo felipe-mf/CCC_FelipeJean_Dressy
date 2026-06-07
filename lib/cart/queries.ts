@@ -13,7 +13,7 @@ type CartItemRow = {
     size: string | null;
     condition: ProductCondition;
     store_id: string;
-    stores: { name: string; slug: string };
+    stores: { name: string; slug: string; offers_delivery: boolean };
     product_images: { path: string; position: number }[] | null;
   };
 };
@@ -31,7 +31,7 @@ export async function getCart(): Promise<CartItemWithProduct[]> {
   const { data, error } = await supabase
     .from("cart_items")
     .select(
-      "id, quantity, product_id, carts!inner(user_id), products!inner(name, price, stock, size, condition, store_id, stores!inner(name, slug), product_images(path, position))",
+      "id, quantity, product_id, carts!inner(user_id), products!inner(name, price, stock, size, condition, store_id, stores!inner(name, slug, offers_delivery), product_images(path, position))",
     )
     .eq("carts.user_id", user.id)
     .order("created_at", { ascending: true });
@@ -51,5 +51,6 @@ export async function getCart(): Promise<CartItemWithProduct[]> {
     store_id: item.products.store_id,
     store_name: item.products.stores.name,
     store_slug: item.products.stores.slug,
+    store_offers_delivery: item.products.stores.offers_delivery,
   }));
 }

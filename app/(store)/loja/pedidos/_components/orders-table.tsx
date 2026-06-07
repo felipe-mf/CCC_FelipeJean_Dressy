@@ -2,17 +2,23 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Clock } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 
 import { cancelOrder, confirmSale } from "@/lib/orders/actions";
 import { Spinner } from "@/components/ui/spinner";
 import { submitButtonState } from "@/components/ui/submit-button-label";
+import { formatAddressLines } from "@/lib/format";
 import { productImageUrl } from "@/lib/products/image-url";
 import {
   OrderStatusBadge,
   PAYMENT_METHOD_LABEL,
 } from "@/components/shared/order-status-badge";
-import type { OrderStatus, PaymentMethod, PaymentStatus } from "@/types";
+import type {
+  OrderAddress,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "@/types";
 
 export interface OrderItemRow {
   name: string;
@@ -30,6 +36,8 @@ export interface OrderRow {
   expires_at: string | null;
   created_at: string;
   customer_name: string | null;
+  // Endereço de entrega — presente apenas em pedidos 'online'.
+  address: OrderAddress | null;
   items: OrderItemRow[];
 }
 
@@ -161,6 +169,7 @@ function OrderCard({
   const [isPending, startTransition] = useTransition();
 
   const shortId = order.id.slice(-6).toUpperCase();
+  const addressLines = order.address ? formatAddressLines(order.address) : null;
   const expiry =
     order.status === "pending" && order.payment_method === "in_store"
       ? expiryLabel(order.expires_at)
@@ -247,6 +256,22 @@ function OrderCard({
           </div>
         ))}
       </div>
+
+      {order.payment_method === "online" && order.address && addressLines && (
+        <div className="flex items-start gap-2 px-6 py-3 border-t border-border bg-surface/40">
+          <MapPin
+            className="size-4 mt-0.5 shrink-0 text-primary"
+            strokeWidth={1.5}
+          />
+          <div className="flex flex-col gap-0.5 text-sm">
+            <span className="text-[10px] uppercase tracking-[0.18em] text-text-secondary">
+              Entregar para {order.address.recipient_name}
+            </span>
+            <span className="text-foreground">{addressLines.line1}</span>
+            <span className="text-muted-foreground">{addressLines.line2}</span>
+          </div>
+        </div>
+      )}
 
       <footer className="flex flex-col gap-3 px-6 py-4 border-t border-border bg-surface/40">
         <div className="flex items-center justify-between">

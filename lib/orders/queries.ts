@@ -4,6 +4,7 @@ import type {
   CustomerOrderDetail,
   CustomerOrderRow,
   Order,
+  OrderAddress,
   OrderItemWithProduct,
 } from "@/types";
 
@@ -61,7 +62,7 @@ export async function getCustomerOrder(
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "*, stores!inner(name, slug), order_items(id, product_id, quantity, unit_price, products!inner(name, size, product_images(path, position)))",
+      "*, stores!inner(name, slug), addresses(recipient_name, postal_code, street, number, complement, district, city, state), order_items(id, product_id, quantity, unit_price, products!inner(name, size, product_images(path, position)))",
     )
     .eq("id", id)
     .eq("customer_id", user.id)
@@ -81,8 +82,9 @@ export async function getCustomerOrder(
     };
   };
 
-  const { stores, order_items, ...order } = data as unknown as Order & {
+  const { stores, addresses, order_items, ...order } = data as unknown as Order & {
     stores: StoreEmbed;
+    addresses: OrderAddress | null;
     order_items: ItemRow[] | null;
   };
 
@@ -100,6 +102,7 @@ export async function getCustomerOrder(
     ...order,
     store_name: stores.name,
     store_slug: stores.slug,
+    delivery_address: addresses,
     items,
   };
 }

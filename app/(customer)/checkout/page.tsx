@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { formatBRL } from "@/lib/format";
 import { getAddresses } from "@/lib/addresses/queries";
 import { getCart } from "@/lib/cart/queries";
-import { CheckoutForm } from "@/app/(customer)/checkout/_components/checkout-form";
+import {
+  CheckoutForm,
+  type CheckoutStoreGroup,
+} from "@/app/(customer)/checkout/_components/checkout-form";
 
 export const metadata = {
   title: "Checkout — Dressy",
@@ -14,6 +17,24 @@ export default async function CheckoutPage() {
   if (items.length === 0) redirect("/carrinho");
 
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+  // Um pedido é criado por loja, então o cliente escolhe entrega/retirada por
+  // loja. Agrupamos os itens preservando a ordem de aparição no carrinho.
+  const groups = new Map<string, CheckoutStoreGroup>();
+  for (const item of items) {
+    const group = groups.get(item.store_id);
+    if (group) {
+      group.subtotal += item.price * item.quantity;
+    } else {
+      groups.set(item.store_id, {
+        store_id: item.store_id,
+        store_name: item.store_name,
+        offers_delivery: item.store_offers_delivery,
+        subtotal: item.price * item.quantity,
+      });
+    }
+  }
+  const storeGroups = [...groups.values()];
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-16 md:py-20">
@@ -31,7 +52,7 @@ export default async function CheckoutPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
         <section className="lg:col-span-7">
-          <CheckoutForm addresses={addresses} />
+          <CheckoutForm addresses={addresses} storeGroups={storeGroups} />
         </section>
 
         <aside className="lg:col-span-5 lg:sticky lg:top-32 lg:self-start">

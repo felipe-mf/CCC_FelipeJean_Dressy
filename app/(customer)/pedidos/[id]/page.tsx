@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
-import { formatBRL, formatDateTime } from "@/lib/format";
+import { formatAddressLines, formatBRL, formatDateTime } from "@/lib/format";
 import { getCustomerOrder } from "@/lib/orders/queries";
 import { getOrderReviews } from "@/lib/reviews/queries";
 import {
@@ -24,6 +24,10 @@ export default async function OrderDetailPage({
   const isPending = order.status === "pending";
   const isCompleted = order.status === "completed";
   const reviews = isCompleted ? await getOrderReviews(id) : {};
+  const deliveryLines =
+    order.payment_method === "online" && order.delivery_address
+      ? formatAddressLines(order.delivery_address)
+      : null;
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-10 md:py-14 max-w-4xl">
@@ -124,6 +128,16 @@ export default async function OrderDetailPage({
           <span>Forma de recebimento</span>
           <span>{PAYMENT_METHOD_LABEL[order.payment_method]}</span>
         </div>
+        {deliveryLines && (
+          <div className="flex items-start justify-between gap-6 text-sm text-secondary-foreground border-t border-border pt-3">
+            <span className="shrink-0">Entrega</span>
+            <span className="text-right text-muted-foreground">
+              {deliveryLines.line1}
+              <br />
+              {deliveryLines.line2}
+            </span>
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-border pt-3">
           <span className="font-heading text-lg text-secondary-foreground">
             Total

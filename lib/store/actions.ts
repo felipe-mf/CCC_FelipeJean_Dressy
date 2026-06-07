@@ -113,6 +113,7 @@ export async function updateStore(formData: FormData) {
   const bannerPath =
     (formData.get("banner_url") as string | null)?.trim() || null;
   const isActive = formData.get("is_active") === "on";
+  const offersDelivery = formData.get("offers_delivery") === "on";
 
   if (!name || name.length < 2 || name.length > MAX_NAME) {
     return { error: `Informe um nome entre 2 e ${MAX_NAME} caracteres.` };
@@ -144,6 +145,7 @@ export async function updateStore(formData: FormData) {
     logo_url: logo.value,
     banner_url: banner.value,
     is_active: isActive,
+    offers_delivery: offersDelivery,
   };
 
   // Slug só é recalculado quando o nome muda — mantém o endereço público
