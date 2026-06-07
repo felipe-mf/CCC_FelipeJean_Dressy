@@ -41,16 +41,20 @@ function slugFromName(name: string): string | null {
   return base && !RESERVED_SLUGS.includes(base) ? base : null;
 }
 
-function validateUrl(
+// O arquivo é enviado direto ao Storage no cliente; a action recebe apenas o
+// path e confirma que ele pertence à loja (prefixo <store_id>/), barrando paths
+// adulterados que tentariam apontar para a pasta de outra loja.
+function validateStoreImagePath(
   value: string | null,
+  storeId: string,
   label: string,
 ): { value: string | null } | { error: string } {
   if (!value) return { value: null };
-  if (!/^https?:\/\//i.test(value)) {
-    return { error: `${label} deve começar com http:// ou https://.` };
-  }
   if (value.length > MAX_TEXT) {
     return { error: `${label} deve ter no máximo ${MAX_TEXT} caracteres.` };
+  }
+  if (!value.startsWith(`${storeId}/`)) {
+    return { error: `${label}: caminho de imagem inválido.` };
   }
   return { value };
 }
@@ -105,8 +109,8 @@ export async function updateStore(formData: FormData) {
   const name = (formData.get("name") as string | null)?.trim();
   const description =
     (formData.get("description") as string | null)?.trim() || null;
-  const logoUrl = (formData.get("logo_url") as string | null)?.trim() || null;
-  const bannerUrl =
+  const logoPath = (formData.get("logo_url") as string | null)?.trim() || null;
+  const bannerPath =
     (formData.get("banner_url") as string | null)?.trim() || null;
   const isActive = formData.get("is_active") === "on";
 
@@ -117,17 +121,22 @@ export async function updateStore(formData: FormData) {
     return { error: `A descrição deve ter no máximo ${MAX_TEXT} caracteres.` };
   }
 
-  const logo = validateUrl(logoUrl, "A logo");
-  if ("error" in logo) return logo;
-  const banner = validateUrl(bannerUrl, "O banner");
-  if ("error" in banner) return banner;
-
   const { data: current } = await supabase
     .from("stores")
-    .select("name")
+    .select("id, name, logo_url, banner_url")
     .eq("owner_id", userId)
-    .maybeSingle<{ name: string }>();
+    .maybeSingle<{
+      id: string;
+      name: string;
+      logo_url: string | null;
+      banner_url: string | null;
+    }>();
   if (!current) return { error: "Loja não encontrada." };
+
+  const logo = validateStoreImagePath(logoPath, current.id, "A logo");
+  if ("error" in logo) return logo;
+  const banner = validateStoreImagePath(bannerPath, current.id, "O banner");
+  if ("error" in banner) return banner;
 
   const payload = {
     name,
@@ -154,6 +163,16 @@ export async function updateStore(formData: FormData) {
   }
 
   if (error) return { error: error.message };
+
+  // Remove do Storage as imagens antigas que foram trocadas ou removidas,
+  // evitando arquivos órfãos no bucket.
+  const orphans = [
+    current.logo_url !== logo.value ? current.logo_url : null,
+    current.banner_url !== banner.value ? current.banner_url : null,
+  ].filter((p): p is string => Boolean(p));
+  if (orphans.length > 0) {
+    await supabase.storage.from("store-images").remove(orphans);
+  }
 
   revalidatePath("/loja/dashboard");
   revalidatePath("/loja/configuracoes");

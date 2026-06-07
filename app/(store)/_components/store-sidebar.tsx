@@ -1,6 +1,7 @@
 import { signOut } from "@/lib/auth/actions";
 import { SidebarShell } from "@/app/(store)/_components/sidebar-shell";
 import { SidebarNav } from "@/app/(store)/_components/sidebar-nav";
+import { StoreAvatar } from "@/app/(store)/_components/store-avatar";
 import type { Store } from "@/types";
 
 interface StoreSidebarProps {
@@ -9,15 +10,6 @@ interface StoreSidebarProps {
 }
 
 export function StoreSidebar({ store, merchantName }: StoreSidebarProps) {
-  const initials = store
-    ? store.name
-        .split(" ")
-        .slice(0, 2)
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-    : "D";
-
   return (
     <SidebarShell>
       {/* Store info */}
@@ -28,11 +20,12 @@ export function StoreSidebar({ store, merchantName }: StoreSidebarProps) {
         </span>
 
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-xl bg-[#F5F0E8]/8 border border-white/10 flex items-center justify-center shrink-0">
-            <span className="font-heading text-sm text-[#F5F0E8]/80">
-              {initials}
-            </span>
-          </div>
+          <StoreAvatar
+            store={store}
+            px={36}
+            className="size-9 rounded-xl bg-[#F5F0E8]/8 border border-white/10 overflow-hidden flex items-center justify-center shrink-0"
+            textClassName="font-heading text-sm text-[#F5F0E8]/80"
+          />
           <div className="flex flex-col gap-0.5 min-w-0">
             <span className="font-heading text-[#F5F0E8]/90 text-sm leading-tight truncate">
               {store?.name ?? "Sem loja"}

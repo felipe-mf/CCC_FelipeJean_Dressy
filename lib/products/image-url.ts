@@ -1,9 +1,7 @@
-const BUCKET = "product-images";
+import { imageBucketUrl } from "@/lib/image-url";
 
 export function productImageUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!base) return "";
-  return `${base}/storage/v1/object/public/${BUCKET}/${path}`;
+  return imageBucketUrl("product-images", path);
 }
 
 // Caminho da imagem de capa: a de menor `position`. Null quando não há imagens.

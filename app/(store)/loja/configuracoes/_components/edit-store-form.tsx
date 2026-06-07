@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FieldInput } from "@/components/ui/field-input";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { StoreImageUploader } from "@/app/(store)/loja/configuracoes/_components/store-image-uploader";
 import { useGuardedSubmit } from "@/lib/hooks/use-guarded-submit";
 import { updateStore } from "@/lib/store/actions";
 import type { Store } from "@/types";
@@ -10,6 +11,9 @@ import type { Store } from "@/types";
 export function EditStoreForm({ store }: { store: Store }) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const uploading = logoUploading || bannerUploading;
 
   const { pending, action: handleSubmit } = useGuardedSubmit(
     async (formData) => {
@@ -61,24 +65,26 @@ export function EditStoreForm({ store }: { store: Store }) {
         </span>
       </label>
 
-      <FieldInput
-        label="Logo (URL)"
+      <StoreImageUploader
+        storeId={store.id}
         name="logo_url"
-        type="url"
-        maxLength={500}
+        kind="logo"
+        label="Logo"
         index="03"
-        defaultValue={store.logo_url ?? ""}
-        hint="Endereço de uma imagem (https://…). Opcional."
+        existing={store.logo_url}
+        aspect="aspect-square"
+        onUploadingChange={setLogoUploading}
       />
 
-      <FieldInput
-        label="Banner (URL)"
+      <StoreImageUploader
+        storeId={store.id}
         name="banner_url"
-        type="url"
-        maxLength={500}
+        kind="banner"
+        label="Banner"
         index="04"
-        defaultValue={store.banner_url ?? ""}
-        hint="Endereço de uma imagem (https://…). Opcional."
+        existing={store.banner_url}
+        aspect="aspect-[3/1]"
+        onUploadingChange={setBannerUploading}
       />
 
       <label className="group flex items-center justify-between gap-4 border-b border-border py-3 cursor-pointer">
@@ -112,12 +118,17 @@ export function EditStoreForm({ store }: { store: Store }) {
 
       <SubmitButton
         pending={pending}
+        disabled={uploading}
         className="inline-flex items-center justify-between px-6 py-5 text-xl rounded-xl"
         trailing={
           <span className="transition-transform group-hover:translate-x-2">→</span>
         }
       >
-        {pending ? "Salvando…" : "Salvar alterações"}
+        {pending
+          ? "Salvando…"
+          : uploading
+            ? "Enviando imagem…"
+            : "Salvar alterações"}
       </SubmitButton>
     </form>
   );
