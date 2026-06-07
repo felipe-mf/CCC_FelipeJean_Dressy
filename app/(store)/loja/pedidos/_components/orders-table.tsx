@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Clock, MapPin } from "lucide-react";
 
 import { cancelOrder, confirmSale } from "@/lib/orders/actions";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { submitButtonState } from "@/components/ui/submit-button-label";
 import { formatAddressLines } from "@/lib/format";
@@ -184,8 +185,6 @@ function OrderCard({
   }
 
   function handleCancel() {
-    if (!confirm(`Cancelar o pedido #${shortId}? A peça volta ao marketplace.`))
-      return;
     setError(null);
     startTransition(async () => {
       const result = await cancelOrder(order.id);
@@ -311,14 +310,23 @@ function OrderCard({
                 {isPending && <Spinner className="size-4" />}
                 Concluir venda
               </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={isPending}
-                className="inline-flex items-center gap-2 border border-border text-text-secondary px-5 py-2.5 rounded-xl hover:bg-surface-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Cancelar
-              </button>
+              <ConfirmDialog
+                title={`Cancelar pedido #${shortId}?`}
+                description="A peça volta ao marketplace e ficará disponível para outros clientes."
+                confirmLabel="Cancelar pedido"
+                cancelLabel="Voltar"
+                destructive
+                onConfirm={handleCancel}
+                trigger={
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    className="inline-flex items-center gap-2 border border-border text-text-secondary px-5 py-2.5 rounded-xl hover:bg-surface-alt transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancelar
+                  </button>
+                }
+              />
             </div>
             {error && (
               <p className="text-sm text-destructive border-l-2 border-destructive pl-3 font-heading italic">

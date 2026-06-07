@@ -7,6 +7,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 
 import { deleteProduct, toggleProductActive } from "@/lib/products/actions";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { productImageUrl } from "@/lib/products/image-url";
 import { ConditionBadge } from "@/app/(store)/loja/produtos/_components/condition-badge";
 import type { Product } from "@/types";
@@ -39,8 +40,6 @@ export function ProductsListTable({ products }: { products: ProductRow[] }) {
   }
 
   function handleDelete(product: ProductRow) {
-    if (!confirm(`Excluir "${product.name}"? Esta ação não pode ser desfeita.`))
-      return;
     setError(null);
     setPendingId(product.id);
     startTransition(async () => {
@@ -199,15 +198,23 @@ export function ProductsListTable({ products }: { products: ProductRow[] }) {
                         >
                           <Pencil className="size-4" />
                         </Link>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(product)}
-                          disabled={busy}
-                          aria-label="Excluir"
-                          className="size-8 inline-flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:cursor-not-allowed"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
+                        <ConfirmDialog
+                          title={`Excluir "${product.name}"?`}
+                          description="Esta ação não pode ser desfeita."
+                          confirmLabel="Excluir"
+                          destructive
+                          onConfirm={() => handleDelete(product)}
+                          trigger={
+                            <button
+                              type="button"
+                              disabled={busy}
+                              aria-label="Excluir"
+                              className="size-8 inline-flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:cursor-not-allowed"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          }
+                        />
                       </div>
                     </td>
                   </tr>
