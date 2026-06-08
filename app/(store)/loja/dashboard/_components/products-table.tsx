@@ -38,78 +38,48 @@ export function ProductsTable({ products }: { products: Product[] }) {
           </p>
         </div>
       ) : (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground px-6 py-3 font-normal">
-                Nome
-              </th>
-              <th className="text-right text-[10px] uppercase tracking-[0.2em] text-muted-foreground px-4 py-3 font-normal hidden sm:table-cell">
-                Preço
-              </th>
-              <th className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground px-4 py-3 font-normal hidden md:table-cell">
-                Cond.
-              </th>
-              <th className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground px-6 py-3 font-normal">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product, i) => (
-              <tr
-                key={product.id}
-                className={`relative cursor-pointer border-b border-border last:border-0 transition-colors hover:bg-muted/30 ${
-                  i % 2 === 1 ? "bg-muted/10" : ""
-                }`}
+        <div className="flex flex-col divide-y divide-border">
+          {products.map((product) => (
+            <Link
+              key={product.id}
+              href={`/loja/produtos/${product.id}`}
+              className="flex items-center gap-4 px-6 py-3.5 cursor-pointer hover:bg-muted/20 transition-colors"
+            >
+              <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                <span className="font-heading text-foreground leading-tight line-clamp-1">
+                  {product.name}
+                </span>
+                {product.brand && (
+                  <span className="text-[11px] text-muted-foreground/60 uppercase tracking-[0.15em]">
+                    {product.brand}
+                  </span>
+                )}
+              </div>
+
+              <span className="font-heading text-foreground hidden sm:flex shrink-0">
+                {product.price.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+              </span>
+
+              <span
+                className={`text-[11px] uppercase tracking-[0.15em] hidden md:flex shrink-0 ${CONDITION_COLORS[product.condition]}`}
               >
-                <td className="px-6 py-3.5">
-                  <Link
-                    href={`/loja/produtos/${product.id}`}
-                    className="absolute inset-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-primary"
-                  >
-                    <span className="sr-only">Editar {product.name}</span>
-                  </Link>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-heading text-foreground leading-tight line-clamp-1">
-                      {product.name}
-                    </span>
-                    {product.brand && (
-                      <span className="text-[11px] text-muted-foreground/60 uppercase tracking-[0.15em]">
-                        {product.brand}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-4 py-3.5 text-right hidden sm:table-cell">
-                  <span className="font-heading text-foreground">
-                    {product.price.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </span>
-                </td>
-                <td className="px-4 py-3.5 text-center hidden md:table-cell">
-                  <span
-                    className={`text-[11px] uppercase tracking-[0.15em] ${CONDITION_COLORS[product.condition]}`}
-                  >
-                    {CONDITION_LABELS[product.condition]}
-                  </span>
-                </td>
-                <td className="px-6 py-3.5 text-center">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span
-                      className={`size-1.5 rounded-full ${product.is_active ? "bg-emerald-500" : "bg-muted-foreground/30"}`}
-                    />
-                    <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
-                      {product.is_active ? "Ativo" : "Inativo"}
-                    </span>
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                {CONDITION_LABELS[product.condition]}
+              </span>
+
+              <span className="inline-flex items-center gap-1.5 shrink-0">
+                <span
+                  className={`size-1.5 rounded-full ${product.is_active ? "bg-emerald-500" : "bg-muted-foreground/30"}`}
+                />
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+                  {product.is_active ? "Ativo" : "Inativo"}
+                </span>
+              </span>
+            </Link>
+          ))}
+        </div>
       )}
     </div>
   );
