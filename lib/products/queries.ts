@@ -15,6 +15,11 @@ type ProductListRow = Pick<
   product_images: ImageEmbed[] | null;
 };
 
+// Colunas comuns a todas as listagens de produto (card do marketplace,
+// loja e relacionados). Mantenha em sincronia com ProductListRow.
+const PRODUCT_LIST_SELECT =
+  "id, name, price, condition, size, stores!inner(name, slug), product_images(path, position)";
+
 function mapToProductListItem(p: ProductListRow): ProductListItem {
   return {
     id: p.id,
@@ -28,6 +33,16 @@ function mapToProductListItem(p: ProductListRow): ProductListItem {
   };
 }
 
+// Converte o resultado de uma listagem em ProductListItem[], tratando
+// erro/ausência de dados como lista vazia.
+function toProductListItems(result: {
+  data: unknown;
+  error: unknown;
+}): ProductListItem[] {
+  if (result.error || !result.data) return [];
+  return (result.data as ProductListRow[]).map(mapToProductListItem);
+}
+
 // Produtos ativos do marketplace, ordenados conforme a escolha do usuário.
 // Público (RLS permite SELECT de produtos ativos para anônimos e autenticados).
 export async function getMarketplaceProducts(
@@ -37,9 +52,7 @@ export async function getMarketplaceProducts(
 
   let query = supabase
     .from("products")
-    .select(
-      "id, name, price, condition, size, stores!inner(name, slug), product_images(path, position)",
-    )
+    .select(PRODUCT_LIST_SELECT)
     .eq("is_active", true);
 
   if (sort === "price_asc") query = query.order("price", { ascending: true });
@@ -47,10 +60,7 @@ export async function getMarketplaceProducts(
     query = query.order("price", { ascending: false });
   else query = query.order("created_at", { ascending: false });
 
-  const { data, error } = await query;
-  if (error || !data) return [];
-
-  return (data as unknown as ProductListRow[]).map(mapToProductListItem);
+  return toProductListItems(await query);
 }
 
 // Detalhe de um produto ativo, com loja e todas as imagens ordenadas.
@@ -85,6 +95,23 @@ export async function getProductById(
   };
 }
 
+// Todas as peças ativas de uma loja, ordenadas das mais recentes às antigas.
+// Usada na página pública da loja (/lojas/[slug]).
+export async function getProductsByStore(
+  storeId: string,
+): Promise<ProductListItem[]> {
+  const supabase = await createClient();
+
+  const result = await supabase
+    .from("products")
+    .select(PRODUCT_LIST_SELECT)
+    .eq("is_active", true)
+    .eq("store_id", storeId)
+    .order("created_at", { ascending: false });
+
+  return toProductListItems(result);
+}
+
 // Outras peças ativas da mesma loja, para a seção de relacionados.
 export async function getRelatedProducts(
   storeId: string,
@@ -93,18 +120,14 @@ export async function getRelatedProducts(
 ): Promise<ProductListItem[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const result = await supabase
     .from("products")
-    .select(
-      "id, name, price, condition, size, stores!inner(name, slug), product_images(path, position)",
-    )
+    .select(PRODUCT_LIST_SELECT)
     .eq("is_active", true)
     .eq("store_id", storeId)
     .neq("id", excludeId)
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  if (error || !data) return [];
-
-  return (data as unknown as ProductListRow[]).map(mapToProductListItem);
+  return toProductListItems(result);
 }

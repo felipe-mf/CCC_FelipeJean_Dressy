@@ -43,13 +43,13 @@ export default async function middleware(request: NextRequest) {
     pathname.startsWith("/carrinho") ||
     pathname.startsWith("/checkout") ||
     pathname.startsWith("/perfil") ||
-    pathname.startsWith("/loja");
+    pathname.startsWith("/loja/");
 
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 
-  if (user && pathname.startsWith("/loja")) {
+  if (user && pathname.startsWith("/loja/")) {
     if (user.user_metadata?.role !== "merchant") {
       return NextResponse.redirect(new URL("/marketplace", request.url));
     }

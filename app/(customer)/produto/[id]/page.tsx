@@ -46,7 +46,12 @@ export default async function ProductPage({
           Marketplace
         </Link>
         <ChevronRight className="size-3" />
-        <span className="text-primary">{product.store_name}</span>
+        <Link
+          href={`/lojas/${product.store_slug}`}
+          className="text-primary hover:opacity-70 transition-opacity"
+        >
+          {product.store_name}
+        </Link>
         <ChevronRight className="size-3" />
         <span className="text-secondary-foreground truncate max-w-[40vw]">
           {product.name}
@@ -64,9 +69,12 @@ export default async function ProductPage({
 
         <aside className="lg:col-span-5 lg:sticky lg:top-32 lg:self-start flex flex-col gap-8">
           <div className="flex flex-col gap-3">
-            <span className="text-[11px] uppercase tracking-[0.28em] text-primary">
+            <Link
+              href={`/lojas/${product.store_slug}`}
+              className="w-fit text-[11px] uppercase tracking-[0.28em] text-primary hover:opacity-70 transition-opacity"
+            >
               {product.store_name}
-            </span>
+            </Link>
             <div className="flex items-start justify-between gap-4">
               <h1
                 className="font-heading text-secondary-foreground leading-[1] tracking-[-0.02em]"
