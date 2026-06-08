@@ -7,6 +7,7 @@ import { formatBRL } from "@/lib/format";
 import { getProductById, getRelatedProducts } from "@/lib/products/queries";
 import { getFavoritesContext } from "@/lib/favorites/context";
 import { AddToCartButton } from "@/app/(customer)/_components/add-to-cart-button";
+import { FavoriteButton } from "@/app/(customer)/_components/favorite-button";
 import { ProductCard } from "@/app/(customer)/_components/product-card";
 import { ProductGallery } from "@/app/(customer)/produto/[id]/_components/product-gallery";
 
@@ -66,12 +67,21 @@ export default async function ProductPage({
             <span className="text-[11px] uppercase tracking-[0.28em] text-primary">
               {product.store_name}
             </span>
-            <h1
-              className="font-heading text-secondary-foreground leading-[1] tracking-[-0.02em]"
-              style={{ fontSize: "clamp(2rem, 4.2vw, 3rem)" }}
-            >
-              {product.name}
-            </h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1
+                className="font-heading text-secondary-foreground leading-[1] tracking-[-0.02em]"
+                style={{ fontSize: "clamp(2rem, 4.2vw, 3rem)" }}
+              >
+                {product.name}
+              </h1>
+              {isCustomer && (
+                <FavoriteButton
+                  productId={product.id}
+                  initialFavorited={favoriteIds.has(product.id)}
+                  variant="detail"
+                />
+              )}
+            </div>
             <div className="flex items-baseline gap-4 pt-2">
               <span className="font-heading text-3xl text-foreground">
                 {formatBRL(product.price)}
